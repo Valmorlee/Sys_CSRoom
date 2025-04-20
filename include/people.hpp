@@ -44,6 +44,7 @@ namespace base {
     public:
         Student *next;
         Student();
+        Student(const std::string &id, const std::string &classId, const std::string &name, const std::string &gender,const std::string &password);
         Student(const std::string &id, const std::string &classId, const std::string &name, const std::string &gender,const std::string &password,const std::tm &startTime,const std::tm &endTime);
         Student(const Student &student);
         ~Student();
@@ -90,6 +91,23 @@ namespace base {
 
         std::string getPassword() const;
         void setPassword(const std::string &password);
+
+    };
+
+    class Machine {
+    private:
+        int id;
+        Student *user;
+
+    public:
+
+        Machine *next; // 指向下一个机器
+
+        Machine(); //创建空机器
+        Machine(int id); // 创建空机器 编号
+        Machine(int id, Student *user); //创建正在使用的机器
+
+        ~Machine();
 
     };
 

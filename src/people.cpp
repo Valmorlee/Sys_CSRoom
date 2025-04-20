@@ -68,14 +68,31 @@ namespace base {
         level = 114514;
     }
 
-    Student::Student(const std::string &id, const std::string &classId, const std::string &name, const std::string &gender, const std::string &password, const std::tm &startTime, const std::tm &endTime) : People(id, classId, name, gender) {
+    Student::Student(const std::string &id, const std::string &classId, const std::string &name, const std::string &gender, const std::string &password, const std::tm &startTime, const std::tm &endTime) {
+        this->id = id;
+        this->classId = classId;
+        this->name = name;
+        this->gender = gender;
         this->password = password;
         this->startTime = startTime;
         this->endTime = endTime;
         level = 114514;
     }
 
+    Student::Student(const std::string &id, const std::string &classId, const std::string &name, const std::string &gender, const std::string &password) {
+        this->id = id;
+        this->classId = classId;
+        this->name = name;
+        this->gender = gender;
+        this->password = password;
+        level = 114514;
+    }
+
     Student::Student(const Student &student) {
+        this->id = student.id;
+        this->classId = student.classId;
+        this->name = student.name;
+        this->gender = student.gender;
         this->password = student.password;
         this->startTime = student.startTime;
         this->endTime = student.endTime;
@@ -134,17 +151,29 @@ namespace base {
 
     Teacher::~Teacher() = default;
 
-    Manager::Manager() : People() {
+    Manager::Manager(){
+        this->id = "NULL";
+        this->classId = "NULL";
+        this->name = "NULL";
+        this->gender = "NULL";
         this->password = "NULL";
         level = 114514;
     }
 
-    Manager::Manager(const std::string &id, const std::string &classId, const std::string &name, const std::string &gender, const std::string &password) : People(id, classId, name, gender) {
+    Manager::Manager(const std::string &id, const std::string &classId, const std::string &name, const std::string &gender, const std::string &password){
+        this->id = id;
+        this->classId = classId;
+        this->name = name;
+        this->gender = gender;
         this->password = password;
         level = 114514;
     }
 
     Manager::Manager(const Manager &manager) {
+        this->id = manager.id;
+        this->classId = manager.classId;
+        this->name = manager.name;
+        this->gender = manager.gender;
         this->password = manager.password;
         level = 114514;
     }
@@ -158,6 +187,27 @@ namespace base {
     }
 
     Manager::~Manager() = default;
+
+    Machine::Machine() {
+        this->next = nullptr;
+        this->id = NULL;
+        this->user = nullptr;
+    }
+
+    Machine::Machine(const int id) {
+        this->next = nullptr;
+        this->user = nullptr;
+        this->id = id;
+    }
+
+    Machine::Machine(const int id, Student *user) {
+        this->id = id;
+        this->user = user;
+        this->next = nullptr;
+    }
+
+    Machine::~Machine() = default;
+
 
 
 }

@@ -4,6 +4,12 @@
 
 #include "utils.hpp"
 
+namespace func {
+
+
+
+}
+
 namespace timeX {
 
     timeViewer::timeViewer() {

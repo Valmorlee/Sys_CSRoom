@@ -8,6 +8,12 @@
 #include <bits/stdc++.h>
 #include <time.h>
 
+namespace func {
+
+
+
+}
+
 namespace timeX {
 
     inline std::vector<int> monthTable = {0,31,0,31,30,31,30,31,31,30,31,30,31}; // 月份表
