@@ -26,8 +26,8 @@ namespace sys {
     void menu_login();
     void menu_modify();
 
-    void menu_stu_check();
-    void menu_man_check();
+    void menu_stu_check(const std::string &account);
+    void menu_man_check(const std::string &account);
 
     std::vector<base::Student> list_stu;
     std::vector<base::Manager> list_man;
@@ -85,7 +85,7 @@ namespace sys {
                     if (stu.getId()==account) {
                         checkExist = true;
                         if (stu.getPassword()==password) {
-                            menu_stu_check();
+                            menu_stu_check(account);
                         }else {
                             test = "密码错误";
                             password = "";
@@ -98,7 +98,7 @@ namespace sys {
                     if (man.getId()==account) {
                         checkExist = true;
                         if (man.getPassword()==password) {
-                            menu_man_check();
+                            menu_man_check(account);
                         }else {
                             test = "密码错误";
                             password = "";
@@ -479,15 +479,81 @@ namespace sys {
         screen.Loop(result);
     }
 
-    void menu_man_check() {
+    void menu_man_check(const std::string &account) {
 
     }
 
-    void menu_stu_check() {
+    void menu_stu_check(const std::string &account) {
+
+        base::Student* stu = nullptr;
+        for (auto stu_ : list_stu) {
+            if (stu_.getId() == account) {
+                stu = &stu_;
+                break;
+            }
+        }
+
+        std::string name = stu->getName();
+
+        auto screen = ScreenInteractive::TerminalOutput();
+
+        Component button_start_machine = Button("  上机" , [&] {
+
+
+        }) | size(WIDTH,EQUAL,10) | center;
+
+        Component button_end_machine = Button("  下机", [&] {
+
+
+        }) | size(WIDTH,EQUAL,10) | center;
+
+        Component button_logout = Button("  注销", [&] {
+
+
+
+        }) | size(WIDTH,EQUAL,10) | center;
+
+        Component button_look = Button("  查看", [&] {
+
+
+
+        }) | size(WIDTH,EQUAL,10) | center;
+
+        auto comp = Container::Vertical({
+            button_start_machine,
+            button_end_machine,
+            button_logout,
+            button_look,
+
+        });
+
+        Component model1 = Renderer(comp, [&] {
+            return hbox({
+                separatorEmpty(),
+                vbox({separatorEmpty(), button_start_machine->Render(), separatorEmpty(), button_end_machine->Render(), separatorEmpty(), button_look->Render(), separatorEmpty(), button_logout->Render(),separatorEmpty()}),
+                separatorEmpty(),
+                separator(),
+
+            });
+        });
+
+        auto result = Renderer(model1,[&] {
+            return vbox({
+                separatorEmpty(),
+                window(text("浙江工业大学机房收费管理系统")| bold | color(LinearGradient(45,Color::Pink1,Color::White)) | center,vbox({
+                    text("你好, " + name + " 同学  ") | bold | color(Color::White) | align_right,
+                    separator(),
+                    model1->Render(),
+
+                }))| size(WIDTH,EQUAL,120)| center,
+            }) | center;
+        });
+
+        screen.CaptureMouse();
+        screen.Loop(result);
+
 
     }
-
-
 
 
 }
