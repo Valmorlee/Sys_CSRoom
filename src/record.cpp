@@ -9,17 +9,19 @@ base::Record::Record() {
     this->name = "NULL";
     this->classId = "NULL";
     this->gender = "NULL";
+    this->machineId = -1;
     this->startTime = {0,0,0,0,0,0,0,0,0};
     this->endTime = {0,0,0,0,0,0,0,0,0};
 }
 
-base::Record::Record(const base::Student &student, const tm &startTimeX, const tm &endTimeX) {
+base::Record::Record(const base::Student &student, const tm &startTimeX, const tm &endTimeX, const int &machineIdX) {
     this->id = student.getId();
     this->classId = student.getClassId();
     this->name = student.getName();
     this->gender = student.getGender();
     this->startTime = startTimeX;
     this->endTime = endTimeX;
+    this->machineId = machineIdX;
 }
 
 base::Record::~Record() = default;
@@ -48,6 +50,10 @@ tm base::Record::getEndTime() const {
     return this->endTime;
 }
 
+int base::Record::getMachineId() const {
+    return this->machineId;
+}
+
 void base::Record::setClassId(const std::string &classId) {
     this->classId = classId;
 }
@@ -70,6 +76,10 @@ void base::Record::setStartTime(const tm &startTime) {
 
 void base::Record::setEndTime(const tm &endTime) {
     this->endTime = endTime;
+}
+
+void base::Record::setMachineId(int machineId) {
+    this->machineId = machineId;
 }
 
 

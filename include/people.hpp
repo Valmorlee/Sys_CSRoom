@@ -108,6 +108,11 @@ namespace base {
         Machine(int id); // 创建空机器 编号
         Machine(int id, Student *user); //创建正在使用的机器
 
+        int getId() const;
+        bool getFlag() const;
+        void setFlag(bool flag);
+        void setId(int id);
+
         ~Machine();
 
     };

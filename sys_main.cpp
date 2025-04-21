@@ -9,7 +9,7 @@
 #include "ftxui/component/captured_mouse.hpp"
 #include "ftxui/component/component.hpp"
 #include "ftxui/component/mouse.hpp"
-
+#include <ftxui/dom/table.hpp>
 #include "ftxui/component/component_base.hpp"
 #include "ftxui/component/component_options.hpp"
 #include "ftxui/component/screen_interactive.hpp"
@@ -34,7 +34,9 @@ namespace sys {
     std::vector<base::Student> list_stu;
     std::vector<base::Manager> list_man;
     std::vector<base::Record> list_rec;
+    std::vector<base::Machine> list_mach;
     inline std::string detectNum = "ZJUT";
+    inline int machineNum = 40;
 
     void preload() {
         std::string a,b,c,d,e;
@@ -53,15 +55,22 @@ namespace sys {
         in.close();
 
         int a1, b1, c1, d1, e1 ,f1 ;
-        int a2, b2, c2, d2, e2 ,f2 ;
+        int a2, b2, c2, d2, e2 ,f2 ,num;
 
         in.open("../out/data_record.txt", std::ios::in);
-        while (in >> a >> b >> c >> d >> a1 >> b1 >> c1 >> d1 >> e1 >> f1 >>a2 >> b2 >> c2 >> d2 >> e2 >> f2) {
+        while (in >> a >> b >> c >> d >> a1 >> b1 >> c1 >> d1 >> e1 >> f1 >>a2 >> b2 >> c2 >> d2 >> e2 >> f2 >> num) {
             tm sx = tm(f1,e1,d1,c1,b1,a1,0,0,0,0,0);
             tm ex = tm(f2,e2,d2,c2,b2,a2,0,0,0,0,0);
-            list_rec.emplace_back(base::Student(a,c,d,e,"NULL",tm(),tm()),sx,ex);
+            list_rec.emplace_back(base::Student(a,b,c,d,"NULL",tm(),tm()),sx,ex,num);
         }
         in.close();
+
+        // machine列表
+
+        for (int i = 0; i < machineNum; i++) {
+            list_mach.emplace_back(i+1);
+        }
+
     }
 
     void save() {
@@ -80,7 +89,7 @@ namespace sys {
 
         out.open("../out/data_record.txt",std::ios::out);
         for (auto rec : list_rec) {
-            out << rec.getId() << " " << rec.getClassId() << " " << rec.getName() << " " << rec.getGender() << " " << rec.getStartTime().tm_year << " " << rec.getStartTime().tm_mon << " " << rec.getStartTime().tm_mday << " " << rec.getStartTime().tm_hour << " " << rec.getStartTime().tm_min << " " << rec.getStartTime().tm_sec << " " << rec.getEndTime().tm_year << " " << rec.getEndTime().tm_mon << " " << rec.getEndTime().tm_mday << " " << rec.getEndTime().tm_hour << " " << rec.getEndTime().tm_min << " " << rec.getEndTime().tm_sec << std::endl;
+            out << rec.getId() << " " << rec.getClassId() << " " << rec.getName() << " " << rec.getGender() << " " << rec.getStartTime().tm_year << " " << rec.getStartTime().tm_mon << " " << rec.getStartTime().tm_mday << " " << rec.getStartTime().tm_hour << " " << rec.getStartTime().tm_min << " " << rec.getStartTime().tm_sec << " " << rec.getEndTime().tm_year << " " << rec.getEndTime().tm_mon << " " << rec.getEndTime().tm_mday << " " << rec.getEndTime().tm_hour << " " << rec.getEndTime().tm_min << " " << rec.getEndTime().tm_sec << " " << rec.getMachineId() << std::endl;
         }
         out.close();
     }
@@ -507,20 +516,22 @@ namespace sys {
 
     void menu_stu_check(const std::string &account) {
 
-        base::Student* stu = nullptr;
-        for (auto stu_ : list_stu) {
-            if (stu_.getId() == account) {
-                stu = &stu_;
+        int stu_index = 0;
+
+        for (int i = 0; i < list_stu.size(); ++i) {
+            if (list_stu[i].getId() == account) {
+                stu_index = i;
                 break;
             }
         }
 
-        std::string name = stu->getName();
-        std::string id = stu->getId();
-        std::string classid = stu->getClassId();
-        std::string gender = stu->getGender();
+        std::string name = list_stu[stu_index].getName();
+        std::string id = list_stu[stu_index].getId();
+        std::string classid = list_stu[stu_index].getClassId();
+        std::string gender = list_stu[stu_index].getGender();
 
         auto screen = ScreenInteractive::TerminalOutput();
+        std::string test = "";
         Component model_base;
         Component model_upMachine;
         Component model_downMachine;
@@ -551,12 +562,24 @@ namespace sys {
             model_base = model_check;
         }) | size(WIDTH,EQUAL,10) | center;
 
+
+        int select_machine = 0;
+        std::vector<std::string> string_mach;
+        for (auto mach : list_mach) {
+            string_mach.emplace_back(std::to_string(mach.getId()) + "号机位");
+        }
+
+        auto layout = Container::Vertical({
+            Container::Horizontal({
+                Dropdown(&string_mach, &select_machine),
+            }),
+        });
+
+
         timeX::timeViewer tv;
         tm timex = tv.getTime(); // Rec startTime
         tm timey = tv.getTime(); // Rec liveTime
         tm timez = tv.getTime(); // Rec endTime
-
-        tm stu_s = stu->getStartTime();
 
         Component button_upupup;
         Component button_downdowndown;
@@ -566,8 +589,14 @@ namespace sys {
             //    return vbox({});
             // });
 
+            if (list_mach[select_machine - 1].getFlag() == 1) {
+                test = "机位已被占用";
+                return;
+            }
+
             // stu->setStartTime(tv.getTime());
             timex = tv.getTime();
+            list_mach[select_machine - 1].setFlag(1);
 
             model_timeMonitor = Renderer([&] {
                 timey = tv.getTime();
@@ -593,6 +622,7 @@ namespace sys {
         button_downdowndown = Button("  结束", [&] {
 
             timez = tv.getTime();
+            list_mach[select_machine - 1].setFlag(0);
 
             // button_downdowndown = Renderer([&] {
             //     return vbox({});
@@ -612,18 +642,62 @@ namespace sys {
                 return vbox({});
             });
 
-            list_rec.emplace_back(base::Record(base::Student(id,classid,name,gender,"NULL"),timex,timez));
+            list_rec.emplace_back(base::Record(base::Student(id,classid,name,gender,"NULL"),timex,timez,select_machine));
 
             save();
 
 
         }) | size(WIDTH,EQUAL,10) | center;
 
-        Component button_outoutout = Button("  退出", [&] {
+        Component button_outoutout1 = Button("  重登", [&] {
 
-
+            menu_login();
 
         }) | size(WIDTH,EQUAL,10) | center;
+
+        Component button_outoutout2 = Button("  退出", [&] {
+
+            exit(0);
+
+        }) | size(WIDTH,EQUAL,10) | center;
+
+        std::vector<std::vector<std::string>> data;
+        data.emplace_back(std::vector<std::string>{"学号","姓名","性别","班级","上机时间","下机时间","上机机器","上机费用"});
+        for (auto rec : list_rec) {
+            if (rec.getId() == id) {
+                std::vector<std::string> temp;
+
+                temp.emplace_back(rec.getId()+"  ");
+                temp.emplace_back(rec.getName()+"  ");
+                temp.emplace_back(rec.getGender()+"  ");
+                temp.emplace_back(rec.getClassId()+"  ");
+
+                std::string time1 = std::to_string(rec.getStartTime().tm_year + 1900) + "-" + std::to_string(rec.getStartTime().tm_mon + 1) + "-" + std::to_string(rec.getStartTime().tm_mday) + " " + std::to_string(rec.getStartTime().tm_hour) + ":" + std::to_string(rec.getStartTime().tm_min) + ":" + std::to_string(rec.getStartTime().tm_sec);
+                std::string time2 = std::to_string(rec.getEndTime().tm_year + 1900) + "-" + std::to_string(rec.getEndTime().tm_mon + 1) + "-" + std::to_string(rec.getEndTime().tm_mday) + " " + std::to_string(rec.getEndTime().tm_hour) + ":" + std::to_string(rec.getEndTime().tm_min) + ":" + std::to_string(rec.getEndTime().tm_sec);
+
+                temp.emplace_back(time1+"  ");
+                temp.emplace_back(time2+"  ");
+                temp.emplace_back(std::to_string(rec.getMachineId()) + "号机器  ");
+                temp.emplace_back(std::format("{}",timeX::timeCal(rec.getStartTime(),rec.getEndTime())));
+
+                data.emplace_back(temp);
+            }
+        }
+
+        auto characters = Table({data});
+        characters.SelectAll().Border(LIGHT);
+        characters.SelectRow(0).Decorate(bold);
+        characters.SelectRow(0).SeparatorVertical(LIGHT);
+        characters.SelectRow(0).Border(DOUBLE);
+
+        auto content = characters.SelectRows(1, -1);
+
+        content.DecorateCellsAlternateRow(color(Color::Blue), 3, 0);
+        content.DecorateCellsAlternateRow(color(Color::Cyan), 3, 1);
+        content.DecorateCellsAlternateRow(color(Color::White), 3, 2);
+
+        auto table = characters.Render() | center ;
+
 
         std::string timeNow;
 
@@ -634,7 +708,9 @@ namespace sys {
             button_look,
             button_downdowndown,
             button_upupup,
-            button_outoutout
+            button_outoutout1,
+            button_outoutout2,
+            layout,
 
         });
 
@@ -649,15 +725,22 @@ namespace sys {
                 paragraphAlignCenter("* 费用将会从校园卡账户余额中自动扣除!") | center | bold | color(Color::Red),
                 paragraphAlignCenter("** 账户注销或者手动下机后，计时将会自动结束!") | center | bold | color(Color::Red),
                 separatorEmpty(),
+                hbox({
+                    text("请选择上机机台：") | center,
+                    layout->Render() | center,
+                }) | center,
+                separatorEmpty(),
                 button_upupup->Render() | bold,
                 model_timeMonitor ->Render() | bold,
+                separatorEmpty(),
+                text(test),
             }) | center;
         });
 
         model_downMachine = Renderer(comp, [&] {
             return vbox({
                 separatorEmpty(),
-                text("这里是下机界面，欢迎 " + name + " 同学下次上机！") | center | bold,
+                text("这里是下机界面，欢迎 " + name + " 同学下次上机！") | center | bold | color(Color::Gold1),
                 separatorDouble(),
                 text("收费稍后将在 " + id + " 校园卡账户扣除") | center | bold ,
                 separatorDouble(),
@@ -668,14 +751,30 @@ namespace sys {
         });
 
         model_exit = Renderer(comp, [&] {
-            return vbox({
+            return hbox({
+                vbox({
+                    separatorEmpty(),
+                    text("重新登录？") | bold | color(Color::Gold1),
+                    separator(),
+                    button_outoutout1 ->Render() | bold,
 
+                }) | center | border | size(WIDTH,EQUAL,40) | size(HEIGHT,EQUAL,10),
+                vbox({
+                    separatorEmpty(),
+                    text("退出系统？") | bold | color(Color::Gold1),
+                    separator(),
+                    button_outoutout2 ->Render() | bold,
+
+                }) | center | border | size(WIDTH,EQUAL,40) | size(HEIGHT,EQUAL,10),
             }) | center;
         });
 
         model_check = Renderer(comp, [&] {
             return vbox({
-
+                separatorEmpty(),
+                text("这里是查看界面，欢迎 " + name + " 同学查看自己上机记录！") | bold | color(Color::Gold1),
+                separatorEmpty(),
+                table | center | size(WIDTH,EQUAL,90) | size(HEIGHT,EQUAL,30),
             }) | center;
         });
 

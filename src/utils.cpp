@@ -43,11 +43,11 @@ namespace timeX {
         int second2 = t2.tm_sec;
 
         if (year1 == year2 && month1 == month2 && day1 == day2) {
-            return hour2 - hour1 + (minute2 - minute1 + (second2 - second1) > 0);
+            return hour2 - hour1 + (((minute2 - minute1) * 60 + (second2 - second1)) >= 0);
         }
 
         if (year1 == year2 && month1 == month2) {
-            return (day2 - day1) * 24 + hour2 - hour1 + (minute2 - minute1 + (second2 - second1) > 0);
+            return (day2 - day1) * 24 + hour2 - hour1 + (((minute2 - minute1) * 60 + (second2 - second1)) >= 0);
         }
 
         if (year1 == year2) {
@@ -58,7 +58,7 @@ namespace timeX {
                 sum_mon += monthTable[i];
             }
 
-            return (day2 - day1) * 24 + hour2 - hour1 + (minute2 - minute1 + (second2 - second1) > 0) + sum_mon * 24;
+            return (day2 - day1) * 24 + hour2 - hour1 + (((minute2 - minute1) * 60 + (second2 - second1)) >= 0) + sum_mon * 24;
         }
 
         if (year1 < year2) {
@@ -79,7 +79,7 @@ namespace timeX {
                 sum_mon += monthTable[i];
             }
 
-            return (day2 - day1) * 24 + hour2 - hour1 + (minute2 - minute1 + (second2 - second1) > 0) + sum_year * 24 + sum_mon * 24;
+            return (day2 - day1) * 24 + hour2 - hour1 + (((minute2 - minute1) * 60 + (second2 - second1)) >= 0) + sum_year * 24 + sum_mon * 24;
         }
 
         return -1;

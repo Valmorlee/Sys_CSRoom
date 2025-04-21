@@ -197,6 +197,7 @@ namespace base {
     Machine::Machine() {
         this->next = nullptr;
         this->id = NULL;
+        this->flag = 0;
         this->user = nullptr;
     }
 
@@ -204,6 +205,7 @@ namespace base {
         this->next = nullptr;
         this->user = nullptr;
         this->id = id;
+        this->flag = 0;
     }
 
     Machine::Machine(const int id, Student *user) {
@@ -211,6 +213,23 @@ namespace base {
         this->user = user;
         this->next = nullptr;
     }
+
+    int Machine::getId() const {
+        return this->id;
+    }
+
+    bool Machine::getFlag() const {
+        return this->flag;
+    }
+
+    void Machine::setFlag(bool flag) {
+        this->flag = flag;
+    }
+
+    void Machine::setId(int id) {
+        this->id = id;
+    }
+
 
     Machine::~Machine() = default;
 
