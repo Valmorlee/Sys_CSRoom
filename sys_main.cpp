@@ -16,6 +16,8 @@
 #include "ftxui/dom/elements.hpp"
 #include "ftxui/util/ref.hpp"
 #include<time.h>
+
+#include "record.hpp"
 #include "utils.hpp"
 
 using namespace ftxui;
@@ -31,6 +33,7 @@ namespace sys {
 
     std::vector<base::Student> list_stu;
     std::vector<base::Manager> list_man;
+    std::vector<base::Record> list_rec;
     inline std::string detectNum = "ZJUT";
 
     void preload() {
@@ -48,19 +51,38 @@ namespace sys {
             list_man.emplace_back(base::Manager(a,c,d,e,b));
         }
         in.close();
+
+        int a1, b1, c1, d1, e1 ,f1 ;
+        int a2, b2, c2, d2, e2 ,f2 ;
+
+        in.open("../out/data_record.txt", std::ios::in);
+        while (in >> a >> b >> c >> d >> a1 >> b1 >> c1 >> d1 >> e1 >> f1 >>a2 >> b2 >> c2 >> d2 >> e2 >> f2) {
+            tm sx = tm(f1,e1,d1,c1,b1,a1,0,0,0,0,0);
+            tm ex = tm(f2,e2,d2,c2,b2,a2,0,0,0,0,0);
+            list_rec.emplace_back(base::Student(a,c,d,e,"NULL",tm(),tm()),sx,ex);
+        }
+        in.close();
     }
 
     void save() {
         std::fstream out;
         out.open("../out/data_student.txt",std::ios::out);
-
         for (auto stu : list_stu) {
             out << stu.getId() << " " << stu.getPassword() << " " << stu.getClassId() << " " << stu.getName() << " " << stu.getGender() << std::endl;
         }
+        out.close();
 
+        out.open("../out/data_manager.txt",std::ios::out);
         for (auto man : list_man) {
             out << man.getId() << " " << man.getPassword() << " " << man.getClassId() << " " << man.getName() << " " << man.getGender() << std::endl;
         }
+        out.close();
+
+        out.open("../out/data_record.txt",std::ios::out);
+        for (auto rec : list_rec) {
+            out << rec.getId() << " " << rec.getClassId() << " " << rec.getName() << " " << rec.getGender() << " " << rec.getStartTime().tm_year << " " << rec.getStartTime().tm_mon << " " << rec.getStartTime().tm_mday << " " << rec.getStartTime().tm_hour << " " << rec.getStartTime().tm_min << " " << rec.getStartTime().tm_sec << " " << rec.getEndTime().tm_year << " " << rec.getEndTime().tm_mon << " " << rec.getEndTime().tm_mday << " " << rec.getEndTime().tm_hour << " " << rec.getEndTime().tm_min << " " << rec.getEndTime().tm_sec << std::endl;
+        }
+        out.close();
     }
 
     void menu_login() {
@@ -243,7 +265,7 @@ namespace sys {
                     }
 
                     if (!checkExist) {
-                        list_stu.emplace_back(base::Student(account, password, classid, name, gender));
+                        list_stu.emplace_back(base::Student(account, classid, name, gender, password));
 
                         save();
 
@@ -494,46 +516,196 @@ namespace sys {
         }
 
         std::string name = stu->getName();
+        std::string id = stu->getId();
+        std::string classid = stu->getClassId();
+        std::string gender = stu->getGender();
 
         auto screen = ScreenInteractive::TerminalOutput();
+        Component model_base;
+        Component model_upMachine;
+        Component model_downMachine;
+        Component model_check;
+        Component model_exit;
+        Component model_timeMonitor = Renderer([&] {return vbox({});});
+        Component model_timeMonitor2_ori = Renderer([&] {
+            return vbox({
+                text("您还暂未上机") | center | bold | color(Color::GreenLight),
+            });
+        });
+
+        Component model_timeMonitor2 = model_timeMonitor2_ori;
 
         Component button_start_machine = Button("  上机" , [&] {
-
-
+            model_base = model_upMachine; // 切换到上机界面
         }) | size(WIDTH,EQUAL,10) | center;
 
         Component button_end_machine = Button("  下机", [&] {
-
-
+            model_base = model_downMachine;
         }) | size(WIDTH,EQUAL,10) | center;
 
         Component button_logout = Button("  注销", [&] {
-
-
-
+            model_base = model_exit;
         }) | size(WIDTH,EQUAL,10) | center;
 
         Component button_look = Button("  查看", [&] {
+            model_base = model_check;
+        }) | size(WIDTH,EQUAL,10) | center;
+
+        timeX::timeViewer tv;
+        tm timex = tv.getTime(); // Rec startTime
+        tm timey = tv.getTime(); // Rec liveTime
+        tm timez = tv.getTime(); // Rec endTime
+
+        tm stu_s = stu->getStartTime();
+
+        Component button_upupup;
+        Component button_downdowndown;
+
+        button_upupup = Button("  开始", [&] {
+            // button_upupup = Renderer([&] {
+            //    return vbox({});
+            // });
+
+            // stu->setStartTime(tv.getTime());
+            timex = tv.getTime();
+
+            model_timeMonitor = Renderer([&] {
+                timey = tv.getTime();
+                return vbox({
+                    separatorEmpty(),
+                    text("开始时间：" + std::to_string(timex.tm_year + 1900) + "-" + std::to_string(timex.tm_mon + 1) + "-" + std::to_string(timex.tm_mday) + " " + std::to_string(timex.tm_hour) + ":" + std::to_string(timex.tm_min) + ":" + std::to_string(timex.tm_sec) + "  现在时间：" + std::to_string(timey.tm_year + 1900) + "-" + std::to_string(timey.tm_mon + 1) + "-" + std::to_string(timey.tm_mday) + " " + std::to_string(timey.tm_hour) + ":" + std::to_string(timey.tm_min) + ":" + std::to_string(timey.tm_sec)) | center | color(Color::Red),
+                });
+            });
+
+            model_timeMonitor2 = Renderer([&] {
+                timey = tv.getTime();
+                long num = timeX::timeCal(timex,timey);
+
+                return vbox({
+                    separatorEmpty(),
+                    text("您已经上机了 " + std::to_string(num) + " 小时") | center | color(Color::Gold1),
+                });
+            });
+
+
+        }) | size(WIDTH,EQUAL,10) | center;
+
+        button_downdowndown = Button("  结束", [&] {
+
+            timez = tv.getTime();
+
+            // button_downdowndown = Renderer([&] {
+            //     return vbox({});
+            // });
+
+            // stu->setEndTime(tv.getTime());
+
+            model_timeMonitor2 = Renderer([&] {
+                return vbox({
+                    separatorEmpty(),
+                    text("结束时间：" + std::to_string(timez.tm_year + 1900) + "-" + std::to_string(timez.tm_mon + 1) + "-" + std::to_string(timez.tm_mday) + " " + std::to_string(timez.tm_hour) + ":" + std::to_string(timez.tm_min) + ":" + std::to_string(timez.tm_sec)) | center | color(Color::Red),
+                });
+            });
+
+
+            model_timeMonitor = Renderer([&] {
+                return vbox({});
+            });
+
+            list_rec.emplace_back(base::Record(base::Student(id,classid,name,gender,"NULL"),timex,timez));
+
+            save();
+
+
+        }) | size(WIDTH,EQUAL,10) | center;
+
+        Component button_outoutout = Button("  退出", [&] {
 
 
 
         }) | size(WIDTH,EQUAL,10) | center;
+
+        std::string timeNow;
 
         auto comp = Container::Vertical({
             button_start_machine,
             button_end_machine,
             button_logout,
             button_look,
+            button_downdowndown,
+            button_upupup,
+            button_outoutout
 
+        });
+
+        model_upMachine = Renderer(comp, [&] {
+            return vbox({
+                separatorEmpty(),
+                text("欢迎 " + name + " 同学上机！") | center | bold,
+                separatorDouble(),
+                text("请确认收费学号 " + id + " !") | center | bold ,
+                separatorDouble(),
+                paragraphAlignCenter("收费标准： 1元/小时（ 不足1小时部分向上取整到1小时 ）") | center | bold | color(Color::Gold1),
+                paragraphAlignCenter("* 费用将会从校园卡账户余额中自动扣除!") | center | bold | color(Color::Red),
+                paragraphAlignCenter("** 账户注销或者手动下机后，计时将会自动结束!") | center | bold | color(Color::Red),
+                separatorEmpty(),
+                button_upupup->Render() | bold,
+                model_timeMonitor ->Render() | bold,
+            }) | center;
+        });
+
+        model_downMachine = Renderer(comp, [&] {
+            return vbox({
+                separatorEmpty(),
+                text("这里是下机界面，欢迎 " + name + " 同学下次上机！") | center | bold,
+                separatorDouble(),
+                text("收费稍后将在 " + id + " 校园卡账户扣除") | center | bold ,
+                separatorDouble(),
+                separatorEmpty(),
+                button_downdowndown ->Render() | bold,
+                model_timeMonitor2 ->Render() | bold,
+            }) | center;
+        });
+
+        model_exit = Renderer(comp, [&] {
+            return vbox({
+
+            }) | center;
+        });
+
+        model_check = Renderer(comp, [&] {
+            return vbox({
+
+            }) | center;
+        });
+
+        model_base = Renderer(comp, [&] {
+            return vbox({
+                text(" ________    _____   __  __   ______   ") | center | bold,
+                text("/\\_____  \\  /\\___ \\ /\\ \\/\\ \\ /\\__  _\\  ") | center | bold,
+                text("\\/____//'/' \\/__/\\ \\ \\ \\ \\ \\\\/_/\\ \\/  ") | center | bold,
+                text("     //'/'     _\\ \\ \\\\ \\ \\ \\ \\  \\ \\ \\  ") | center | bold,
+                text("    //'/'___  /\\ \\_\\ \\\\ \\ \\_\\ \\  \\ \\ \\ ") | center | bold,
+                text("    /\\_______\\\\ \\____/ \\ \\_____\\  \\ \\_\\") | center | bold,
+                text("    \\/_______/ \\/___/   \\/_____/   \\/_/") | center | bold,
+                separatorEmpty(),
+
+                vbox({paragraphAlignCenter("左侧是功能栏, 可以点击进行相关操作") | center | color(Color::Gold1),
+                paragraphAlignLeft("  (1) 上机 -> 打开上机界面，选择机器，点击开始上机") | color(Color::GreenLight),
+                paragraphAlignLeft("  (2) 下机 -> 打开下机界面，点击自动结束计时") | color(Color::GreenLight),
+                paragraphAlignLeft("  (3) 查看 -> 打开查看界面，可以查看个人信息") | color(Color::GreenLight),
+                paragraphAlignLeft("  (4) 注销 -> 打开注销界面，注销后需要重新登录") | color(Color::GreenLight),}) | borderDouble | size(WIDTH,EQUAL,60),
+
+            }) | center;
         });
 
         Component model1 = Renderer(comp, [&] {
             return hbox({
                 separatorEmpty(),
-                vbox({separatorEmpty(), button_start_machine->Render(), separatorEmpty(), button_end_machine->Render(), separatorEmpty(), button_look->Render(), separatorEmpty(), button_logout->Render(),separatorEmpty()}),
+                vbox({separatorEmpty(), button_start_machine->Render() | center, separatorEmpty(), button_end_machine->Render() | center, separatorEmpty(), button_look->Render() | center, separatorEmpty(), button_logout->Render() | center,separatorEmpty()}) | size(WIDTH,EQUAL,15) | center,
                 separatorEmpty(),
                 separator(),
-
+                hbox({model_base->Render()}) | center | size(WIDTH,EQUAL,95),
             });
         });
 
@@ -551,14 +723,13 @@ namespace sys {
 
         screen.CaptureMouse();
         screen.Loop(result);
-
-
     }
 
 
 }
 
 int main() {
+
     sys::preload();
     sys::menu_login();
 

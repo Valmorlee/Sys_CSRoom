@@ -61,7 +61,11 @@ namespace base {
 
     People::~People() = default;
 
-    Student::Student() : People() {
+    Student::Student() {
+        this->id = "NULL";
+        this->name = "NULL";
+        this->classId = "NULL";
+        this->gender = "NULL";
         this->password = "NULL";
         this->startTime = {0,0,0,0,0,0,0,0,0};
         this->endTime = {0,0,0,0,0,0,0,0,0};
@@ -85,6 +89,8 @@ namespace base {
         this->name = name;
         this->gender = gender;
         this->password = password;
+        this->startTime = {0,0,0,0,0,0,0,0,0};
+        this->endTime = {0,0,0,0,0,0,0,0,0};
         level = 114514;
     }
 

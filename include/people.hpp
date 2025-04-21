@@ -97,6 +97,7 @@ namespace base {
     class Machine {
     private:
         int id;
+        bool flag;
         Student *user;
 
     public:
