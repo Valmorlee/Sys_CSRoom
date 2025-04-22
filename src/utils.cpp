@@ -4,9 +4,47 @@
 
 #include "utils.hpp"
 
-namespace func {
+namespace cmp {
 
+    bool cmp_id_up(base::Student &a,base::Student &b) {
+        return a.getId() < b.getId();
+    }
 
+    bool cmp_id_down(base::Student &a,base::Student &b) {
+        return a.getId() > b.getId();
+    }
+
+    bool cmp_startTime_up(base::Student &a,base::Student &b) {
+        return timeX::timeComp(a.getStartTime(), b.getStartTime()) == false;
+    }
+
+    bool cmp_startTime_down(base::Student &a,base::Student &b) {
+        return timeX::timeComp(a.getStartTime(), b.getStartTime()) == true;
+    }
+
+    bool cmp_duringTime_up(base::Record &a, base::Record &b) {
+        return timeX::timeCal(a.getStartTime(), a.getEndTime()) < timeX::timeCal(b.getStartTime(), b.getEndTime());
+    }
+
+    bool cmp_duringTime_down(base::Record &a, base::Record &b) {
+        return timeX::timeCal(a.getStartTime(), a.getEndTime()) > timeX::timeCal(b.getStartTime(), b.getEndTime());
+    }
+
+    bool cmp_classId_up(base::Student &a, base::Student &b) {
+        return a.getClassId() < b.getClassId();
+    }
+
+    bool cmp_classId_down(base::Student &a, base::Student &b) {
+        return a.getClassId() > b.getClassId();
+    }
+
+    bool cmp_name_up(base::Student &a, base::Student &b) {
+        return a.getName() < b.getName();
+    }
+
+    bool cmp_name_down(base::Student &a, base::Student &b) {
+        return a.getName() > b.getName();
+    }
 
 }
 
@@ -28,7 +66,42 @@ namespace timeX {
         return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
     }
 
-    long timeCal(tm t1,tm t2) {
+    bool timeComp(tm t1, tm t2) { // t1 > t2 则返回true， t1 < t2 则返回false
+        int year1 = t1.tm_year + 1900;
+        int year2 = t2.tm_year + 1900;
+        int month1 = t1.tm_mon + 1;
+        int month2 = t2.tm_mon + 1;
+        int day1 = t1.tm_mday;
+        int day2 = t2.tm_mday;
+        int hour1 = t1.tm_hour;
+        int hour2 = t2.tm_hour;
+        int minute1 = t1.tm_min;
+        int minute2 = t2.tm_min;
+        int second1 = t1.tm_sec;
+        int second2 = t2.tm_sec;
+
+        if (year1 > year2) return true;
+        else if (year1 < year2) return false;
+
+        if (month1 > month2) return true;
+        else if (month1 < month2) return false;
+
+        if (day1 > day2) return true;
+        else if (day1 < day2) return false;
+
+        if (hour1 > hour2) return true;
+        else if (hour1 < hour2) return false;
+
+        if (minute1 > minute2) return true;
+        else if (minute1 < minute2) return false;
+
+        if (second1 > second2) return true;
+        else if (second1 < second2) return false;
+
+        return false;
+    }
+
+    long timeCal(const tm &t1, const tm &t2) {
         int year1 = t1.tm_year + 1900;
         int year2 = t2.tm_year + 1900;
         int month1 = t1.tm_mon + 1;

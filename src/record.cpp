@@ -81,5 +81,3 @@ void base::Record::setEndTime(const tm &endTime) {
 void base::Record::setMachineId(int machineId) {
     this->machineId = machineId;
 }
-
-

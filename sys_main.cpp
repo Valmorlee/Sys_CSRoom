@@ -429,7 +429,7 @@ namespace sys {
                 test = "请输入完整信息";
             }else {
                 bool checkExist = false;
-                for (auto stu : list_stu) {
+                for (auto &stu : list_stu) {
                     if (stu.getId() == account) {
                         checkExist = true;
                         if (stu.getName() == name) {
@@ -446,7 +446,7 @@ namespace sys {
                     }
                 }
 
-                for (auto man : list_man) {
+                for (auto &man : list_man) {
                     if (man.getId() == account) {
                         checkExist = true;
                         if (man.getName() == name) {
@@ -454,7 +454,8 @@ namespace sys {
                             save();
                             test = "修改完成 请重新登录";
                             sleep(1);
-                            screen.Exit();
+                            // screen.Exit();
+                            menu_login();
                             break;
                         }else {
                             test = "该账号原信息与验证姓名不匹配";
@@ -512,6 +513,143 @@ namespace sys {
 
     void menu_man_check(const std::string &account) {
 
+        int man_index = 0;
+
+        for (int i = 0; i < list_man.size(); ++i) {
+            if (list_man[i].getId() == account) {
+                man_index = i;
+                break;
+            }
+        }
+
+        std::string _name = list_man[man_index].getName();
+        std::string _id = list_man[man_index].getId();
+        std::string _classid = list_man[man_index].getClassId();
+        std::string _gender = list_man[man_index].getGender();
+
+        auto screen = ScreenInteractive::TerminalOutput();
+        std::string test = "";
+        Component model_base;
+        Component model_find;
+        Component model_compare;
+        Component model_machine_check;
+        Component model_cal;
+        Component model_exit;
+
+        // button model类
+        Component button_find = Button("  查询", [&] {
+
+        }) | size(WIDTH,EQUAL,10) | center;
+
+        Component button_compare = Button("  统计", [&] {
+
+        }) | size(WIDTH,EQUAL,10) | center;
+
+        Component button_machine_check = Button("  监控", [&] {
+
+        }) | size(WIDTH,EQUAL,10) | center;
+
+        Component button_exit = Button("  注销", [&] {
+            model_base = model_exit;
+        }) | size(WIDTH,EQUAL,10) | center;
+
+        Component button_out1 = Button("  重登", [&] {
+            menu_login();
+        }) | size(WIDTH,EQUAL,10) | center;
+
+        Component button_out2 = Button("  退出", [&] {
+            exit(0);
+        }) | size(WIDTH,EQUAL,10) | center;
+
+        auto comp = Container::Vertical({
+            button_find,
+            button_compare,
+            button_machine_check,
+            button_exit,
+            button_out1,
+            button_out2,
+        });
+
+        model_compare = Renderer(comp, [&] {
+            return vbox({});
+        }) | border | size(WIDTH,EQUAL,60) | center;
+
+        model_exit = Renderer(comp, [&] {
+            return hbox({
+                vbox({
+                    separatorEmpty(),
+                    text("重新登录？") | bold | color(Color::Gold1),
+                    separator(),
+                    button_out1 ->Render() | bold,
+
+                }) | center | border | size(WIDTH,EQUAL,40) | size(HEIGHT,EQUAL,10),
+                vbox({
+                    separatorEmpty(),
+                    text("退出系统？") | bold | color(Color::Gold1),
+                    separator(),
+                    button_out2 ->Render() | bold,
+
+                }) | center | border | size(WIDTH,EQUAL,40) | size(HEIGHT,EQUAL,10),
+            }) | center;
+        });
+
+        model_machine_check = Renderer(comp, [&] {
+            return vbox({});
+        }) | border | size(WIDTH,EQUAL,60) | center;
+
+        model_find = Renderer(comp, [&] {
+            return vbox({});
+        }) | border | size(WIDTH,EQUAL,60) | center;
+
+        model_base = Renderer(comp, [&] {
+            return vbox({
+                text(" ________    _____   __  __   ______   ") | center | bold,
+                text("/\\_____  \\  /\\___ \\ /\\ \\/\\ \\ /\\__  _\\  ") | center | bold,
+                text("\\/____//'/' \\/__/\\ \\ \\ \\ \\ \\\\/_/\\ \\/  ") | center | bold,
+                text("     //'/'     _\\ \\ \\\\ \\ \\ \\ \\  \\ \\ \\  ") | center | bold,
+                text("    //'/'___  /\\ \\_\\ \\\\ \\ \\_\\ \\  \\ \\ \\ ") | center | bold,
+                text("    /\\_______\\\\ \\____/ \\ \\_____\\  \\ \\_\\") | center | bold,
+                text("    \\/_______/ \\/___/   \\/_____/   \\/_/") | center | bold,
+                separatorEmpty(),
+                text("Welcome to ZJUT Computer Room Manage System!") | center | bold | color(Color::Cyan1),
+                separatorEmpty(),
+
+                vbox({paragraphAlignCenter("左侧是功能栏, 可以点击进行相关操作") | center | color(Color::Gold1),
+                paragraphAlignLeft("  (1) 查询 -> 打开查询界面，按照条件查询学生历史上机信息") | color(Color::GreenLight), // 单词条查询信息
+                paragraphAlignLeft("  (2) 统计 -> 打开统计界面，查看历史所有上机记录，并按照条件排序") | color(Color::GreenLight), // 展示所有Record按照排序输出
+                paragraphAlignLeft("  (3) 监控 -> 打开监控界面，查看机房机器实时状态") | color(Color::GreenLight), // 改变机房机器个数 显示实时机器状况
+                paragraphAlignLeft("  (4) 注销 -> 打开注销界面，注销后需要重新登录") | color(Color::GreenLight),}) | borderDouble | size(WIDTH,EQUAL,80),
+                separatorEmpty(),
+                separatorEmpty(),
+
+            }) | center;
+        });
+
+        Component model1 = Renderer(comp, [&] {
+            return hbox({
+                separatorEmpty(),
+                vbox({separatorEmpty(), button_find->Render() | center, separatorEmpty(), button_compare->Render() | center, separatorEmpty(), button_machine_check->Render() | center, separatorEmpty(), button_exit->Render() | center,separatorEmpty()}) | size(WIDTH,EQUAL,15) | center,
+                separatorEmpty(),
+                separator(),
+                hbox({model_base->Render()}) | center | size(WIDTH,EQUAL,95),
+            });
+        });
+
+        auto result = Renderer(model1,[&] {
+            return vbox({
+                separatorEmpty(),
+                window(text("浙江工业大学机房收费管理系统")| bold | color(LinearGradient(45,Color::Pink1,Color::White)) | center,vbox({
+                    text("你好, " + _name + " 管理员  ") | bold | color(Color::White) | align_right,
+                    separator(),
+                    model1->Render(),
+
+                }))| size(WIDTH,EQUAL,120)| center,
+            }) | center;
+        });
+
+        screen.CaptureMouse();
+        screen.Loop(result);
+
     }
 
     void menu_stu_check(const std::string &account) {
@@ -531,7 +669,7 @@ namespace sys {
         std::string gender = list_stu[stu_index].getGender();
 
         auto screen = ScreenInteractive::TerminalOutput();
-        std::string test = "";
+        std::string test = "", test2 = "";
         Component model_base;
         Component model_upMachine;
         Component model_downMachine;
@@ -677,7 +815,7 @@ namespace sys {
 
                 temp.emplace_back(time1+"  ");
                 temp.emplace_back(time2+"  ");
-                temp.emplace_back(std::to_string(rec.getMachineId()) + "号机器  ");
+                temp.emplace_back(std::to_string(rec.getMachineId()+1) + "号机器  ");
                 temp.emplace_back(std::format("{}",timeX::timeCal(rec.getStartTime(),rec.getEndTime())));
 
                 data.emplace_back(temp);
@@ -773,9 +911,12 @@ namespace sys {
             return vbox({
                 separatorEmpty(),
                 text("这里是查看界面，欢迎 " + name + " 同学查看自己上机记录！") | bold | color(Color::Gold1),
+                text("* 刚结束的上下机具有延迟，可以重新登陆进行查看！") | bold | color(Color::Green),
                 separatorEmpty(),
                 table | center | size(WIDTH,EQUAL,90) | size(HEIGHT,EQUAL,30),
-            }) | center;
+                separatorEmpty(),
+                text(test2),
+            });
         });
 
         model_base = Renderer(comp, [&] {
@@ -788,12 +929,16 @@ namespace sys {
                 text("    /\\_______\\\\ \\____/ \\ \\_____\\  \\ \\_\\") | center | bold,
                 text("    \\/_______/ \\/___/   \\/_____/   \\/_/") | center | bold,
                 separatorEmpty(),
+                text("Welcome to ZJUT Computer Room Manage System!") | center | bold | color(Color::Cyan1),
+                separatorEmpty(),
 
                 vbox({paragraphAlignCenter("左侧是功能栏, 可以点击进行相关操作") | center | color(Color::Gold1),
                 paragraphAlignLeft("  (1) 上机 -> 打开上机界面，选择机器，点击开始上机") | color(Color::GreenLight),
                 paragraphAlignLeft("  (2) 下机 -> 打开下机界面，点击自动结束计时") | color(Color::GreenLight),
                 paragraphAlignLeft("  (3) 查看 -> 打开查看界面，可以查看个人信息") | color(Color::GreenLight),
                 paragraphAlignLeft("  (4) 注销 -> 打开注销界面，注销后需要重新登录") | color(Color::GreenLight),}) | borderDouble | size(WIDTH,EQUAL,60),
+                separatorEmpty(),
+                separatorEmpty(),
 
             }) | center;
         });
