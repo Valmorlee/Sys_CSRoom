@@ -5,6 +5,7 @@
 #include <people.hpp>
 #include<bits/stdc++.h>
 #include<ftxui/dom/elements.hpp>
+#include "ftxui/screen/color.hpp"
 #include<ftxui/screen/screen.hpp>
 #include "ftxui/component/captured_mouse.hpp"
 #include "ftxui/component/component.hpp"
@@ -29,7 +30,7 @@ namespace sys {
     void menu_modify();
 
     void menu_stu_check(const std::string &account);
-    void menu_man_check(const std::string &account);
+    void menu_man_check(const std::string &account, int num1, int num2, int flag);
 
     std::vector<base::Student> list_stu;
     std::vector<base::Manager> list_man;
@@ -37,6 +38,10 @@ namespace sys {
     std::vector<base::Machine> list_mach;
     inline std::string detectNum = "ZJUT";
     inline int machineNum = 40;
+
+    Element ColorTile(const int &red, const int &green, const int &blue, const int &width, const int &height) { // 创建色块 用于明确机器状态
+        return text("") | size(WIDTH, EQUAL, width ) | size(HEIGHT,EQUAL, height) | bgcolor(Color::RGB(red, green, blue));
+    }
 
     void preload() {
         std::string a,b,c,d,e;
@@ -129,7 +134,7 @@ namespace sys {
                     if (man.getId()==account) {
                         checkExist = true;
                         if (man.getPassword()==password) {
-                            menu_man_check(account);
+                            menu_man_check(account, 0, 0, 0);
                         }else {
                             test = "密码错误";
                             password = "";
@@ -143,42 +148,6 @@ namespace sys {
                     password = "";
                     account = "";
                 }
-
-                // base::Student* stu = map_stu;
-                // while (stu!=nullptr) {
-                //     checkExist = true;
-                //     if (stu->getId()==account) {
-                //         if (stu->getPassword()==password) {
-                //             menu_stu_check(); // 学生界面
-                //         }else {
-                //             test = "密码错误";
-                //             password = "";
-                //             break;
-                //         }
-                //     }
-                //     stu = stu->next;
-                // }
-                //
-                // base::Manager* man = map_man;
-                // while (man!=nullptr) {
-                //     if (man->getId()==account) {
-                //         checkExist = true;
-                //         if (man->getPassword()==password) {
-                //             menu_man_check(); // 管理员界面
-                //         }else {
-                //             test = "密码错误";
-                //             password = "";
-                //             break;
-                //         }
-                //     }
-                //     man = man->next;
-                // }
-                //
-                // if (!checkExist) {
-                //     test = "账户信息不存在";
-                //     account = "";
-                //     password = "";
-                // }
 
             }
         }) | size(WIDTH,EQUAL,10) | center;
@@ -215,7 +184,7 @@ namespace sys {
                 text("浙江工业大学机房收费管理系统欢迎您") | bold | color(LinearGradient(45,Color::Pink1,Color::White)) | center,
                 renderer->Render(),
                 text(test) | center | bold | color(Color::Red),
-                hbox(button_login->Render(), separatorEmpty(), button_register->Render(), separatorEmpty(), button_modify->Render()) | center
+                hbox(button_login->Render(), separatorEmpty(), button_register->Render(), separatorEmpty(), button_modify->Render()) | center,
             })| border | size(WIDTH,EQUAL,80) | center;
         });
 
@@ -283,33 +252,6 @@ namespace sys {
                         menu_login();
                     }
 
-                    // //学生
-                    // base::Student* stu = map_stu;
-                    // while (stu!=nullptr) {
-                    //     if (stu->getId()==account) {
-                    //         test = "该账号已存在";
-                    //         account = "";
-                    //         password = "";
-                    //         checkExist = true;
-                    //     }
-                    //
-                    //     stu = stu->next;
-                    // }
-                    //
-                    // if (!checkExist) {
-                    //     stu = new base::Student(account, password, classid, name, gender);
-                    //
-                    //     //写入文件
-                    //     std::ofstream out;
-                    //     out.open("../out/data_student.txt",std::ios::app);
-                    //     out<<account<<" "<<classid<<" "<<name<<" "<<gender<<" "<<password<<std::endl;
-                    //     out.close();
-                    //
-                    //     test = "注册成功，正在返回登录界面";
-                    //     sleep(1);
-                    //     menu_login();
-                    // }
-
                 }else {
 
                     for (auto man : list_man) {
@@ -332,31 +274,6 @@ namespace sys {
                         screen.Exit();
                     }
 
-                    // //管理者
-                    // base::Manager* man = map_man;
-                    // while (man != nullptr) {
-                    //     if (man->getId() == account) {
-                    //         test = "该账号已存在";
-                    //         account = "";
-                    //         password = "";
-                    //         checkExist = true;
-                    //     }
-                    //     man = man->next;
-                    // }
-                    //
-                    // if (!checkExist) {
-                    //     man = new base::Manager(account, password, classid, name, gender);
-                    //
-                    //     //写入文件
-                    //     std::ofstream out;
-                    //     out.open("../out/data_manager.txt.txt",std::ios::app);
-                    //     out<<account<<" "<<classid<<" "<<name<<" "<<gender<<" "<<password<<std::endl;
-                    //     out.close();
-                    //
-                    //     test = "注册成功，正在返回登录界面";
-                    //     sleep(1);
-                    //     menu_login();
-                    // }
                 }
             }
 
@@ -511,7 +428,7 @@ namespace sys {
         screen.Loop(result);
     }
 
-    void menu_man_check(const std::string &account) {
+    void menu_man_check(const std::string &account, int num1, int num2, int flag) {
 
         int man_index = 0;
 
@@ -527,6 +444,13 @@ namespace sys {
         std::string _classid = list_man[man_index].getClassId();
         std::string _gender = list_man[man_index].getGender();
 
+        std::vector<std::vector<std::string>> data_base;
+        data_base.emplace_back(std::vector<std::string>{" 学号 "," 姓名 "," 性别 "," 班级 "," 上机时间 "," 下机时间 "," 上机机器 "," 上机费用 "});
+        std::vector<std::vector<std::string>> data_CMP = data_base;
+
+        int toggled_selected_num = num1;
+        int toggled_selected_num2 = num2;
+
         auto screen = ScreenInteractive::TerminalOutput();
         std::string test = "";
         Component model_base;
@@ -538,15 +462,17 @@ namespace sys {
 
         // button model类
         Component button_find = Button("  查询", [&] {
-
+            model_base = model_find;
         }) | size(WIDTH,EQUAL,10) | center;
 
         Component button_compare = Button("  统计", [&] {
 
+            model_base = model_compare;
+
         }) | size(WIDTH,EQUAL,10) | center;
 
         Component button_machine_check = Button("  监控", [&] {
-
+            model_base = model_machine_check;
         }) | size(WIDTH,EQUAL,10) | center;
 
         Component button_exit = Button("  注销", [&] {
@@ -561,6 +487,119 @@ namespace sys {
             exit(0);
         }) | size(WIDTH,EQUAL,10) | center;
 
+        for (auto rec : list_rec) {
+            std::vector<std::string> temp;
+
+            temp.emplace_back(rec.getId()+"  ");
+            temp.emplace_back(rec.getName()+"  ");
+            temp.emplace_back(rec.getGender()+"  ");
+            temp.emplace_back(rec.getClassId()+"  ");
+
+            std::string time1 = std::to_string(rec.getStartTime().tm_year + 1900) + "-" + std::to_string(rec.getStartTime().tm_mon + 1) + "-" + std::to_string(rec.getStartTime().tm_mday) + " " + std::to_string(rec.getStartTime().tm_hour) + ":" + std::to_string(rec.getStartTime().tm_min) + ":" + std::to_string(rec.getStartTime().tm_sec);
+            std::string time2 = std::to_string(rec.getEndTime().tm_year + 1900) + "-" + std::to_string(rec.getEndTime().tm_mon + 1) + "-" + std::to_string(rec.getEndTime().tm_mday) + " " + std::to_string(rec.getEndTime().tm_hour) + ":" + std::to_string(rec.getEndTime().tm_min) + ":" + std::to_string(rec.getEndTime().tm_sec);
+
+            temp.emplace_back(time1+"  ");
+            temp.emplace_back(time2+"  ");
+            temp.emplace_back(std::to_string(rec.getMachineId()+1) + "号机器  ");
+            temp.emplace_back(std::format("{}",timeX::timeCal(rec.getStartTime(),rec.getEndTime())));
+
+            data_base.emplace_back(temp);
+        }
+
+        data_CMP = data_base;
+
+        std::vector<std::string> header = {" 学号 "," 姓名 "," 班级 ", " 上机开始时间 ", " 上机时长 "};
+        Component toggle1 = Toggle(&header, &toggled_selected_num);
+
+        std::vector<std::string> header2 = {" 降序 "," 升序 "};
+        Component toggle2 = Toggle(&header2, &toggled_selected_num2);
+
+        Component button_confirm = Button("  确认", [&] {
+
+            menu_man_check(account, toggled_selected_num, toggled_selected_num2, 1);
+
+        }) | size(HEIGHT,EQUAL,3) | size(WIDTH,EQUAL,10);
+
+        // 排序规则选择
+        std::vector<base::Record> data_records = list_rec;
+        if (toggled_selected_num == 0) {
+
+            if (toggled_selected_num2 == 0) {
+                std::sort(data_records.begin(), data_records.end(), cmp::cmp_id_down);
+            }else {
+                std::sort(data_records.begin(), data_records.end(), cmp::cmp_id_up);
+            }
+
+        }else if (toggled_selected_num == 1) {
+
+            if (toggled_selected_num2 == 0) {
+                std::sort(data_records.begin(), data_records.end(), cmp::cmp_name_down);
+            }else {
+                std::sort(data_records.begin(), data_records.end(), cmp::cmp_name_up);
+            }
+
+        }else if (toggled_selected_num == 2) {
+
+            if (toggled_selected_num2 == 0) {
+                std::sort(data_records.begin(), data_records.end(), cmp::cmp_classId_down);
+            }else {
+                std::sort(data_records.begin(), data_records.end(), cmp::cmp_classId_up);
+            }
+
+        }else if (toggled_selected_num == 3) {
+
+            if (toggled_selected_num2 == 0) {
+                std::sort(data_records.begin(), data_records.end(), cmp::cmp_startTime_down);
+            }else {
+                std::sort(data_records.begin(), data_records.end(), cmp::cmp_startTime_up);
+            }
+
+        }else if (toggled_selected_num == 4) {
+
+            if (toggled_selected_num2 == 0) {
+                std::sort(data_records.begin(), data_records.end(), cmp::cmp_duringTime_down);
+            }else {
+                std::sort(data_records.begin(), data_records.end(), cmp::cmp_duringTime_up);
+            }
+
+        }
+
+        data_CMP.clear();
+        data_CMP.emplace_back(std::vector<std::string>{" 学号 "," 姓名 "," 性别 "," 班级 "," 上机时间 "," 下机时间 "," 上机机器 "," 上机费用 "});
+
+        for (auto &rec : data_records) {
+            std::vector<std::string> temp;
+
+            temp.emplace_back(rec.getId()+"  ");
+            temp.emplace_back(rec.getName()+"  ");
+            temp.emplace_back(rec.getGender()+"  ");
+            temp.emplace_back(rec.getClassId()+"  ");
+
+            std::string time1 = std::to_string(rec.getStartTime().tm_year + 1900) + "-" + std::to_string(rec.getStartTime().tm_mon + 1) + "-" + std::to_string(rec.getStartTime().tm_mday) + " " + std::to_string(rec.getStartTime().tm_hour) + ":" + std::to_string(rec.getStartTime().tm_min) + ":" + std::to_string(rec.getStartTime().tm_sec);
+            std::string time2 = std::to_string(rec.getEndTime().tm_year + 1900) + "-" + std::to_string(rec.getEndTime().tm_mon + 1) + "-" + std::to_string(rec.getEndTime().tm_mday) + " " + std::to_string(rec.getEndTime().tm_hour) + ":" + std::to_string(rec.getEndTime().tm_min) + ":" + std::to_string(rec.getEndTime().tm_sec);
+
+            temp.emplace_back(time1+"  ");
+            temp.emplace_back(time2+"  ");
+            temp.emplace_back(std::to_string(rec.getMachineId()+1) + "号机器  ");
+            temp.emplace_back(std::format("{}",timeX::timeCal(rec.getStartTime(),rec.getEndTime())));
+
+            data_CMP.emplace_back(temp);
+        }
+
+        auto characters = Table({data_CMP});
+        characters.SelectAll().Border(LIGHT);
+        characters.SelectRow(0).Decorate(bold);
+        characters.SelectRow(0).SeparatorVertical(LIGHT);
+        characters.SelectRow(0).Border(DOUBLE);
+
+        auto content = characters.SelectRows(1, -1);
+
+        content.DecorateCellsAlternateRow(color(Color::Blue), 3, 0);
+        content.DecorateCellsAlternateRow(color(Color::Cyan), 3, 1);
+        content.DecorateCellsAlternateRow(color(Color::White), 3, 2);
+
+        auto table = characters.Render();
+
         auto comp = Container::Vertical({
             button_find,
             button_compare,
@@ -568,11 +607,32 @@ namespace sys {
             button_exit,
             button_out1,
             button_out2,
+            toggle1,
+            toggle2,
+            button_confirm,
         });
 
         model_compare = Renderer(comp, [&] {
-            return vbox({});
-        }) | border | size(WIDTH,EQUAL,60) | center;
+            return vbox({
+                separatorDouble(),
+                hbox({
+                    separator(),
+                    text(" 查询选项：") | bold | color(Color::Gold1),
+                    separator(),
+                    toggle1->Render(),
+                    separator(),
+                    toggle2->Render(),
+                    separator(),
+                }) | center,
+                // separator() | size(WIDTH,EQUAL,73),
+                table | size(WIDTH,EQUAL,100) | center,
+                separatorEmpty(),
+                separatorEmpty(),
+                button_confirm->Render() | center | bold,
+                separatorEmpty(),
+
+            })| center | size(WIDTH,EQUAL,100);
+        }) | size(WIDTH,EQUAL,100) | center;
 
         model_exit = Renderer(comp, [&] {
             return hbox({
@@ -626,12 +686,16 @@ namespace sys {
         });
 
         Component model1 = Renderer(comp, [&] {
+            if (flag == 1) {
+                flag = 0;
+                model_base = model_compare;
+            }
             return hbox({
                 separatorEmpty(),
                 vbox({separatorEmpty(), button_find->Render() | center, separatorEmpty(), button_compare->Render() | center, separatorEmpty(), button_machine_check->Render() | center, separatorEmpty(), button_exit->Render() | center,separatorEmpty()}) | size(WIDTH,EQUAL,15) | center,
                 separatorEmpty(),
                 separator(),
-                hbox({model_base->Render()}) | center | size(WIDTH,EQUAL,95),
+                hbox({model_base->Render() | center}) | center | flex | size(WIDTH,EQUAL,95),
             });
         });
 
@@ -800,7 +864,7 @@ namespace sys {
         }) | size(WIDTH,EQUAL,10) | center;
 
         std::vector<std::vector<std::string>> data;
-        data.emplace_back(std::vector<std::string>{"学号","姓名","性别","班级","上机时间","下机时间","上机机器","上机费用"});
+        data.emplace_back(std::vector<std::string>{" 学号 "," 姓名 "," 性别 "," 班级 "," 上机时间 "," 下机时间 "," 上机机器 "," 上机费用 "});
         for (auto rec : list_rec) {
             if (rec.getId() == id) {
                 std::vector<std::string> temp;
@@ -910,10 +974,10 @@ namespace sys {
         model_check = Renderer(comp, [&] {
             return vbox({
                 separatorEmpty(),
-                text("这里是查看界面，欢迎 " + name + " 同学查看自己上机记录！") | bold | color(Color::Gold1),
-                text("* 刚结束的上下机具有延迟，可以重新登陆进行查看！") | bold | color(Color::Green),
+                text("  这里是查看界面，欢迎 " + name + " 同学查看自己上机记录！") | bold | color(Color::Gold1),
+                text("  * 刚结束的上下机具有延迟，可以重新登陆进行查看！") | bold | color(Color::Green),
                 separatorEmpty(),
-                table | center | size(WIDTH,EQUAL,90) | size(HEIGHT,EQUAL,30),
+                table | center | size(WIDTH,EQUAL,100),
                 separatorEmpty(),
                 text(test2),
             });

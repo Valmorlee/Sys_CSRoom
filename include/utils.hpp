@@ -13,20 +13,20 @@
 namespace cmp {
 
     // 学号
-    bool cmp_id_up(base::Student &a,base::Student &b);
-    bool cmp_id_down(base::Student &a,base::Student &b);
+    bool cmp_id_up(base::Record &a,base::Record &b);
+    bool cmp_id_down(base::Record &a,base::Record &b);
 
     // 班级
-    bool cmp_classId_up(base::Student &a,base::Student &b);
-    bool cmp_classId_down(base::Student &a,base::Student &b);
+    bool cmp_classId_up(base::Record &a,base::Record &b);
+    bool cmp_classId_down(base::Record &a,base::Record &b);
 
     // 姓名
-    bool cmp_name_up(base::Student &a,base::Student &b);
-    bool cmp_name_down(base::Student &a,base::Student &b);
+    bool cmp_name_up(base::Record &a,base::Record &b);
+    bool cmp_name_down(base::Record &a,base::Record &b);
 
     // 开始时间
-    bool cmp_startTime_up(base::Student &a,base::Student &b);
-    bool cmp_startTime_down(base::Student &a,base::Student &b);
+    bool cmp_startTime_up(base::Record &a,base::Record &b);
+    bool cmp_startTime_down(base::Record &a,base::Record &b);
 
     // 时长
     bool cmp_duringTime_up(base::Record &a,base::Record &b);

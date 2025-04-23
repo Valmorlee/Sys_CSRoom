@@ -6,19 +6,19 @@
 
 namespace cmp {
 
-    bool cmp_id_up(base::Student &a,base::Student &b) {
+    bool cmp_id_up(base::Record &a,base::Record &b) {
         return a.getId() < b.getId();
     }
 
-    bool cmp_id_down(base::Student &a,base::Student &b) {
+    bool cmp_id_down(base::Record &a,base::Record &b) {
         return a.getId() > b.getId();
     }
 
-    bool cmp_startTime_up(base::Student &a,base::Student &b) {
+    bool cmp_startTime_up(base::Record &a,base::Record &b) {
         return timeX::timeComp(a.getStartTime(), b.getStartTime()) == false;
     }
 
-    bool cmp_startTime_down(base::Student &a,base::Student &b) {
+    bool cmp_startTime_down(base::Record &a,base::Record &b) {
         return timeX::timeComp(a.getStartTime(), b.getStartTime()) == true;
     }
 
@@ -30,19 +30,19 @@ namespace cmp {
         return timeX::timeCal(a.getStartTime(), a.getEndTime()) > timeX::timeCal(b.getStartTime(), b.getEndTime());
     }
 
-    bool cmp_classId_up(base::Student &a, base::Student &b) {
+    bool cmp_classId_up(base::Record &a, base::Record &b) {
         return a.getClassId() < b.getClassId();
     }
 
-    bool cmp_classId_down(base::Student &a, base::Student &b) {
+    bool cmp_classId_down(base::Record &a, base::Record &b) {
         return a.getClassId() > b.getClassId();
     }
 
-    bool cmp_name_up(base::Student &a, base::Student &b) {
+    bool cmp_name_up(base::Record &a, base::Record &b) {
         return a.getName() < b.getName();
     }
 
-    bool cmp_name_down(base::Student &a, base::Student &b) {
+    bool cmp_name_down(base::Record &a, base::Record &b) {
         return a.getName() > b.getName();
     }
 
