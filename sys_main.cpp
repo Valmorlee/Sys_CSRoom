@@ -25,12 +25,14 @@ using namespace ftxui;
 
 namespace sys {
 
+    const float cash_index = 1.0;
+
     void menu_register();
     void menu_login();
     void menu_modify();
 
     void menu_stu_check(const std::string &account);
-    void menu_man_check(const std::string &account, int num1, int num2, int flag);
+    void menu_man_check(const std::string &account, int num1, int num2, int num3, int flag);
 
     std::vector<base::Student> list_stu;
     std::vector<base::Manager> list_man;
@@ -39,7 +41,7 @@ namespace sys {
     inline std::string detectNum = "ZJUT";
     inline int machineNum = 40;
 
-    Element ColorTile(const int &red, const int &green, const int &blue, const int &width, const int &height) { // 创建色块 用于明确机器状态
+    Element colorTile(const int &red, const int &green, const int &blue, const int &width, const int &height) { // 创建色块 用于明确机器状态
         return text("") | size(WIDTH, EQUAL, width ) | size(HEIGHT,EQUAL, height) | bgcolor(Color::RGB(red, green, blue));
     }
 
@@ -134,7 +136,7 @@ namespace sys {
                     if (man.getId()==account) {
                         checkExist = true;
                         if (man.getPassword()==password) {
-                            menu_man_check(account, 0, 0, 0);
+                            menu_man_check(account, 0, 0, 0, 0);
                         }else {
                             test = "密码错误";
                             password = "";
@@ -428,7 +430,7 @@ namespace sys {
         screen.Loop(result);
     }
 
-    void menu_man_check(const std::string &account, int num1, int num2, int flag) {
+    void menu_man_check(const std::string &account, int num1, int num2, int num3, int flag) {
 
         int man_index = 0;
 
@@ -447,6 +449,7 @@ namespace sys {
         std::vector<std::vector<std::string>> data_base;
         data_base.emplace_back(std::vector<std::string>{" 学号 "," 姓名 "," 性别 "," 班级 "," 上机时间 "," 下机时间 "," 上机机器 "," 上机费用 "});
         std::vector<std::vector<std::string>> data_CMP = data_base;
+        std::vector<std::vector<std::string>> data_MACH = data_base;
 
         int toggled_selected_num = num1;
         int toggled_selected_num2 = num2;
@@ -459,6 +462,7 @@ namespace sys {
         Component model_machine_check;
         Component model_cal;
         Component model_exit;
+        Component model_setting;
 
         // button model类
         Component button_find = Button("  查询", [&] {
@@ -479,12 +483,16 @@ namespace sys {
             model_base = model_exit;
         }) | size(WIDTH,EQUAL,10) | center;
 
+        Component button_setting = Button("  设置", [&] {
+            model_base = model_setting;
+        }) | size(WIDTH,EQUAL,10) | center;
+
         Component button_out1 = Button("  重登", [&] {
             menu_login();
         }) | size(WIDTH,EQUAL,10) | center;
 
         Component button_out2 = Button("  退出", [&] {
-            exit(0);
+            exit(EXIT_SUCCESS);
         }) | size(WIDTH,EQUAL,10) | center;
 
         for (auto rec : list_rec) {
@@ -516,7 +524,7 @@ namespace sys {
 
         Component button_confirm = Button("  确认", [&] {
 
-            menu_man_check(account, toggled_selected_num, toggled_selected_num2, 1);
+            menu_man_check(account, toggled_selected_num, toggled_selected_num2, 0, 1);
 
         }) | size(HEIGHT,EQUAL,3) | size(WIDTH,EQUAL,10);
 
@@ -581,7 +589,7 @@ namespace sys {
             temp.emplace_back(time1+"  ");
             temp.emplace_back(time2+"  ");
             temp.emplace_back(std::to_string(rec.getMachineId()+1) + "号机器  ");
-            temp.emplace_back(std::format("{}",timeX::timeCal(rec.getStartTime(),rec.getEndTime())));
+            temp.emplace_back(std::format("{}",static_cast<int>(cash_index * timeX::timeCal(rec.getStartTime(),rec.getEndTime()))));
 
             data_CMP.emplace_back(temp);
         }
@@ -600,6 +608,71 @@ namespace sys {
 
         auto table = characters.Render();
 
+        int select_machine = num3;
+        Element cond_base = separatorEmpty();
+        Element cond_Free = vbox({text("空闲中") | color(Color::Green) | bold | center, colorTile(0,255,0,10,1) | center}) | center;
+        Element cond_Busy = vbox({text("占用中") | color(Color::Red) | bold | center, colorTile(255,0,0,10,1) | center}) | center;
+
+        for (auto &mach : list_mach) {
+            if (mach.getId() == select_machine + 1) {
+                if (mach.getFlag()) {
+                    cond_base = cond_Busy;
+                }else cond_base = cond_Free;
+            }
+        }
+
+        std::vector<std::string> string_mach;
+        for (auto mach : list_mach) {
+            string_mach.emplace_back(std::to_string(mach.getId()) + "号机位");
+        }
+
+        auto layout = Container::Vertical({
+            Container::Horizontal({
+                Dropdown(&string_mach, &select_machine),
+            }),
+        });
+
+        data_MACH.clear();
+        data_MACH.emplace_back(std::vector<std::string>{" 学号 "," 姓名 "," 班级 "," 上机时间 "," 下机时间 "," 上机费用 "});
+
+        for (auto &rec : data_records) {
+
+            if (rec.getMachineId() == select_machine) {
+                std::vector<std::string> temp;
+
+                temp.emplace_back(rec.getId()+"  ");
+                temp.emplace_back(rec.getName()+"  ");
+                temp.emplace_back(rec.getClassId()+"  ");
+
+                std::string time1 = std::to_string(rec.getStartTime().tm_year + 1900) + "-" + std::to_string(rec.getStartTime().tm_mon + 1) + "-" + std::to_string(rec.getStartTime().tm_mday) + " " + std::to_string(rec.getStartTime().tm_hour) + ":" + std::to_string(rec.getStartTime().tm_min) + ":" + std::to_string(rec.getStartTime().tm_sec);
+                std::string time2 = std::to_string(rec.getEndTime().tm_year + 1900) + "-" + std::to_string(rec.getEndTime().tm_mon + 1) + "-" + std::to_string(rec.getEndTime().tm_mday) + " " + std::to_string(rec.getEndTime().tm_hour) + ":" + std::to_string(rec.getEndTime().tm_min) + ":" + std::to_string(rec.getEndTime().tm_sec);
+
+                temp.emplace_back(time1+"  ");
+                temp.emplace_back(time2+"  ");
+                temp.emplace_back(std::format("{}",static_cast<int>(cash_index * timeX::timeCal(rec.getStartTime(),rec.getEndTime()))));
+
+                data_MACH.emplace_back(temp);
+            }
+        }
+
+        auto characters2 = Table({data_MACH});
+        characters2.SelectAll().Border(LIGHT);
+        characters2.SelectRow(0).Decorate(bold);
+        characters2.SelectRow(0).SeparatorVertical(LIGHT);
+        characters2.SelectRow(0).Border(DOUBLE);
+
+        auto content2 = characters2.SelectRows(1, -1);
+
+        content2.DecorateCellsAlternateRow(color(Color::Blue), 3, 0);
+        content2.DecorateCellsAlternateRow(color(Color::Cyan), 3, 1);
+        content2.DecorateCellsAlternateRow(color(Color::White), 3, 2);
+
+        auto table2 = characters2.Render();
+
+        auto button_confirm_mach = Button(" ENTER ", [&] {
+            menu_man_check(account, 0,0, select_machine, 2);
+        }) | center | size(WIDTH,EQUAL,12);
+
         auto comp = Container::Vertical({
             button_find,
             button_compare,
@@ -610,6 +683,9 @@ namespace sys {
             toggle1,
             toggle2,
             button_confirm,
+            layout,
+            button_confirm_mach,
+            button_setting,
         });
 
         model_compare = Renderer(comp, [&] {
@@ -653,11 +729,35 @@ namespace sys {
             }) | center;
         });
 
-        model_machine_check = Renderer(comp, [&] {
+        model_machine_check = Renderer(comp, [&] { // 做成抽屉查询，竖直排列分别是抽屉选择，确定按钮，test&状态图标色块（红绿区分），表格为最近使用这台机器的人
+
+            return vbox({
+                text("机房机位记录查询") | center | bold | color(Color::Gold1),
+                separator(),
+                hbox({
+                    vbox({
+                        separatorEmpty(),
+                        text("请选择机位: "),
+                    }),
+                    layout->Render() | center,
+                    separatorEmpty(),
+                    button_confirm_mach->Render(),
+                    separatorEmpty(),
+
+                }) | center,
+                cond_base | center,
+                separatorEmpty(),
+                table2 | size(WIDTH,EQUAL,120) | center,
+                separatorEmpty(),
+
+            }) | center;
+        }) | size(WIDTH,EQUAL,80) | center;
+
+        model_find = Renderer(comp, [&] {
             return vbox({});
         }) | border | size(WIDTH,EQUAL,60) | center;
 
-        model_find = Renderer(comp, [&] {
+        model_setting = Renderer(comp, [&] {
             return vbox({});
         }) | border | size(WIDTH,EQUAL,60) | center;
 
@@ -689,10 +789,13 @@ namespace sys {
             if (flag == 1) {
                 flag = 0;
                 model_base = model_compare;
+            }else if (flag == 2) {
+                flag = 0;
+                model_base = model_machine_check;
             }
             return hbox({
                 separatorEmpty(),
-                vbox({separatorEmpty(), button_find->Render() | center, separatorEmpty(), button_compare->Render() | center, separatorEmpty(), button_machine_check->Render() | center, separatorEmpty(), button_exit->Render() | center,separatorEmpty()}) | size(WIDTH,EQUAL,15) | center,
+                vbox({separatorEmpty(), button_find->Render() | center, separatorEmpty(), button_compare->Render() | center, separatorEmpty(), button_machine_check->Render() | center, separatorEmpty(), button_setting->Render() | center, separatorEmpty(), button_exit->Render() | center,separatorEmpty()}) | size(WIDTH,EQUAL,15) | center,
                 separatorEmpty(),
                 separator(),
                 hbox({model_base->Render() | center}) | center | flex | size(WIDTH,EQUAL,95),
@@ -859,7 +962,7 @@ namespace sys {
 
         Component button_outoutout2 = Button("  退出", [&] {
 
-            exit(0);
+            exit(EXIT_SUCCESS);
 
         }) | size(WIDTH,EQUAL,10) | center;
 
@@ -913,7 +1016,6 @@ namespace sys {
             button_outoutout1,
             button_outoutout2,
             layout,
-
         });
 
         model_upMachine = Renderer(comp, [&] {
