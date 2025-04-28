@@ -942,8 +942,8 @@ namespace sys {
                 paragraphAlignLeft("  (1) 查询 -> 打开查询界面，按照条件查询学生历史上机信息") | color(Color::GreenLight), // 单词条查询信息
                 paragraphAlignLeft("  (2) 统计 -> 打开统计界面，查看历史所有上机记录，并按照条件排序") | color(Color::GreenLight), // 展示所有Record按照排序输出
                 paragraphAlignLeft("  (3) 监控 -> 打开监控界面，查看机房机器实时状态") | color(Color::GreenLight), // 改变机房机器个数 显示实时机器状况
-                paragraphAlignLeft("  (4) 注销 -> 打开注销界面，注销后需要重新登录") | color(Color::GreenLight),}) | borderDouble | size(WIDTH,EQUAL,80),
-                separatorEmpty(),
+                paragraphAlignLeft("  (4) 设置 -> 打开设置界面，修改基本机房信息和管理员相关信息") | color(Color::GreenLight),
+                paragraphAlignLeft("  (5) 注销 -> 打开注销界面，注销后需要重新登录") | color(Color::GreenLight),}) | borderDouble | size(WIDTH,EQUAL,80),
                 separatorEmpty(),
 
             }) | center;
