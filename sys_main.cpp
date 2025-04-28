@@ -32,7 +32,7 @@ namespace sys {
     void menu_modify();
 
     void menu_stu_check(const std::string &account);
-    void menu_man_check(const std::string &account, int num1, int num2, int num3, int flag);
+    void menu_man_check(const std::string &account, int num1, int num2, int num3, int num_find, std::string browseSTR, int flag);
 
     std::vector<base::Student> list_stu;
     std::vector<base::Manager> list_man;
@@ -72,7 +72,12 @@ namespace sys {
         }
         in.close();
 
-        // machine列表
+        // machine列表初始化
+        in.open("../out/data_machine.txt", std::ios::in);
+        int num1; std::string num2;
+        in >> num1 >> num2;
+        machineNum = num1;
+        detectNum = num2;
 
         for (int i = 0; i < machineNum; i++) {
             list_mach.emplace_back(i+1);
@@ -98,6 +103,10 @@ namespace sys {
         for (auto rec : list_rec) {
             out << rec.getId() << " " << rec.getClassId() << " " << rec.getName() << " " << rec.getGender() << " " << rec.getStartTime().tm_year << " " << rec.getStartTime().tm_mon << " " << rec.getStartTime().tm_mday << " " << rec.getStartTime().tm_hour << " " << rec.getStartTime().tm_min << " " << rec.getStartTime().tm_sec << " " << rec.getEndTime().tm_year << " " << rec.getEndTime().tm_mon << " " << rec.getEndTime().tm_mday << " " << rec.getEndTime().tm_hour << " " << rec.getEndTime().tm_min << " " << rec.getEndTime().tm_sec << " " << rec.getMachineId() << std::endl;
         }
+        out.close();
+
+        out.open("../out/data_machine.txt",  std::ios::out);
+        out << machineNum << std::endl << detectNum << std::endl;
         out.close();
     }
 
@@ -136,7 +145,7 @@ namespace sys {
                     if (man.getId()==account) {
                         checkExist = true;
                         if (man.getPassword()==password) {
-                            menu_man_check(account, 0, 0, 0, 0);
+                            menu_man_check(account, 0, 0, 0, 0, "", 0);
                         }else {
                             test = "密码错误";
                             password = "";
@@ -430,7 +439,7 @@ namespace sys {
         screen.Loop(result);
     }
 
-    void menu_man_check(const std::string &account, int num1, int num2, int num3, int flag) {
+    void menu_man_check(const std::string &account, int num1, int num2, int num3, int num_find, std::string browseSTR, int flag) {
 
         int man_index = 0;
 
@@ -450,6 +459,7 @@ namespace sys {
         data_base.emplace_back(std::vector<std::string>{" 学号 "," 姓名 "," 性别 "," 班级 "," 上机时间 "," 下机时间 "," 上机机器 "," 上机费用 "});
         std::vector<std::vector<std::string>> data_CMP = data_base;
         std::vector<std::vector<std::string>> data_MACH = data_base;
+        std::vector<std::vector<std::string>> data_FIND = data_base;
 
         int toggled_selected_num = num1;
         int toggled_selected_num2 = num2;
@@ -524,7 +534,7 @@ namespace sys {
 
         Component button_confirm = Button("  确认", [&] {
 
-            menu_man_check(account, toggled_selected_num, toggled_selected_num2, 0, 1);
+            menu_man_check(account, toggled_selected_num, toggled_selected_num2, 0, 0, "", 1);
 
         }) | size(HEIGHT,EQUAL,3) | size(WIDTH,EQUAL,10);
 
@@ -670,7 +680,124 @@ namespace sys {
         auto table2 = characters2.Render();
 
         auto button_confirm_mach = Button(" ENTER ", [&] {
-            menu_man_check(account, 0,0, select_machine, 2);
+            menu_man_check(account, 0,0, select_machine, 0, "", 2);
+        }) | center | size(WIDTH,EQUAL,12);
+
+        std::string input_MachNum = "";
+        auto input_sys_machineNum = Input(&input_MachNum, std::to_string(machineNum));
+
+        std::string input_detectNum = "";
+        auto input_sys_detectNum = Input(&input_detectNum, detectNum);
+
+        // 判断输入是否为数字 lambda函数
+        auto isNum = [](const std::string &str) {
+            for (auto &c : str) {
+                if (c<'0'||c>'9') return false;
+            }
+            return true;
+        };
+
+        std::string test1 = "",test2 = "";
+        Component button_modMachNum = Button(" 修改 ", [&] {
+
+            if (input_MachNum != "") {
+                if (isNum(input_MachNum)) {
+                    int tempNum = std::stoi(input_MachNum);
+                    machineNum = tempNum;
+                    test1 = "机房机器数量修改成功";
+                }else {
+                    test1  = "修改失败: 输入非数字";
+                }
+            }
+
+            if (input_detectNum != "") {
+                detectNum = input_detectNum;
+                test2 = "机房管理员邀请码修改成功";
+            }
+
+            save();
+        }) | center | size(WIDTH,EQUAL,12);
+
+        // 查询界面
+        std::string input_browse = browseSTR;
+        auto input_sys_find = Input(&input_browse, "在此输入关键词");
+
+        int toggled_selected_num3 = num_find; // 需要修改 num_find
+        std::vector<std::string> toggle = {" 学号 "," 姓名 "," 班级 "};
+        Component toggle_find = Toggle(&toggle, &toggled_selected_num3);
+
+        data_FIND.clear();
+        data_FIND.emplace_back(std::vector<std::string>{" 学号 "," 姓名 "," 性别 "," 班级 "," 上机时间 "," 下机时间 "," 上机机器 "," 上机费用 "});
+
+        for (const auto &rec : data_records) {
+            std::vector<std::string> temp;
+            // 先选择选项再查找关键词
+            if (toggled_selected_num3 == 0) {
+                if (rec.getId().find(browseSTR) != std::string::npos || browseSTR == "") { //debug tag
+                    temp.emplace_back(rec.getId()+"  ");
+                    temp.emplace_back(rec.getName()+"  ");
+                    temp.emplace_back(rec.getGender()+"  ");
+                    temp.emplace_back(rec.getClassId()+"  ");
+
+                    std::string time1 = std::to_string(rec.getStartTime().tm_year + 1900) + "-" + std::to_string(rec.getStartTime().tm_mon + 1) + "-" + std::to_string(rec.getStartTime().tm_mday) + " " + std::to_string(rec.getStartTime().tm_hour) + ":" + std::to_string(rec.getStartTime().tm_min) + ":" + std::to_string(rec.getStartTime().tm_sec);
+                    std::string time2 = std::to_string(rec.getEndTime().tm_year + 1900) + "-" + std::to_string(rec.getEndTime().tm_mon + 1) + "-" + std::to_string(rec.getEndTime().tm_mday) + " " + std::to_string(rec.getEndTime().tm_hour) + ":" + std::to_string(rec.getEndTime().tm_min) + ":" + std::to_string(rec.getEndTime().tm_sec);
+
+                    temp.emplace_back(time1+"  ");
+                    temp.emplace_back(time2+"  ");
+                    temp.emplace_back(std::to_string(rec.getMachineId()+1) + "号机器  ");
+                    temp.emplace_back(std::format("{}",static_cast<int>(cash_index * timeX::timeCal(rec.getStartTime(),rec.getEndTime()))));
+                }
+            }else if (toggled_selected_num3 == 1) {
+                if (rec.getName().find(browseSTR) != std::string::npos || browseSTR == "") {
+                    temp.emplace_back(rec.getId()+"  ");
+                    temp.emplace_back(rec.getName()+"  ");
+                    temp.emplace_back(rec.getGender()+"  ");
+                    temp.emplace_back(rec.getClassId()+"  ");
+
+                    std::string time1 = std::to_string(rec.getStartTime().tm_year + 1900) + "-" + std::to_string(rec.getStartTime().tm_mon + 1) + "-" + std::to_string(rec.getStartTime().tm_mday) + " " + std::to_string(rec.getStartTime().tm_hour) + ":" + std::to_string(rec.getStartTime().tm_min) + ":" + std::to_string(rec.getStartTime().tm_sec);
+                    std::string time2 = std::to_string(rec.getEndTime().tm_year + 1900) + "-" + std::to_string(rec.getEndTime().tm_mon + 1) + "-" + std::to_string(rec.getEndTime().tm_mday) + " " + std::to_string(rec.getEndTime().tm_hour) + ":" + std::to_string(rec.getEndTime().tm_min) + ":" + std::to_string(rec.getEndTime().tm_sec);
+
+                    temp.emplace_back(time1+"  ");
+                    temp.emplace_back(time2+"  ");
+                    temp.emplace_back(std::to_string(rec.getMachineId()+1) + "号机器  ");
+                    temp.emplace_back(std::format("{}",static_cast<int>(cash_index * timeX::timeCal(rec.getStartTime(),rec.getEndTime()))));
+                }
+            }else {
+                if (rec.getClassId().find(browseSTR) != std::string::npos || browseSTR == "") {
+                    temp.emplace_back(rec.getId()+"  ");
+                    temp.emplace_back(rec.getName()+"  ");
+                    temp.emplace_back(rec.getGender()+"  ");
+                    temp.emplace_back(rec.getClassId()+"  ");
+
+                    std::string time1 = std::to_string(rec.getStartTime().tm_year + 1900) + "-" + std::to_string(rec.getStartTime().tm_mon + 1) + "-" + std::to_string(rec.getStartTime().tm_mday) + " " + std::to_string(rec.getStartTime().tm_hour) + ":" + std::to_string(rec.getStartTime().tm_min) + ":" + std::to_string(rec.getStartTime().tm_sec);
+                    std::string time2 = std::to_string(rec.getEndTime().tm_year + 1900) + "-" + std::to_string(rec.getEndTime().tm_mon + 1) + "-" + std::to_string(rec.getEndTime().tm_mday) + " " + std::to_string(rec.getEndTime().tm_hour) + ":" + std::to_string(rec.getEndTime().tm_min) + ":" + std::to_string(rec.getEndTime().tm_sec);
+
+                    temp.emplace_back(time1+"  ");
+                    temp.emplace_back(time2+"  ");
+                    temp.emplace_back(std::to_string(rec.getMachineId()+1) + "号机器  ");
+                    temp.emplace_back(std::format("{}",static_cast<int>(cash_index * timeX::timeCal(rec.getStartTime(),rec.getEndTime()))));
+                }
+            }
+
+            if (!temp.empty()) data_FIND.emplace_back(temp);
+        }
+
+        auto characters_find = Table({data_FIND});
+        characters_find.SelectAll().Border(LIGHT);
+        characters_find.SelectRow(0).Decorate(bold);
+        characters_find.SelectRow(0).SeparatorVertical(LIGHT);
+        characters_find.SelectRow(0).Border(DOUBLE);
+
+        auto content_find = characters_find.SelectRows(1, -1);
+
+        content_find.DecorateCellsAlternateRow(color(Color::Blue), 3, 0);
+        content_find.DecorateCellsAlternateRow(color(Color::Cyan), 3, 1);
+        content_find.DecorateCellsAlternateRow(color(Color::White), 3, 2);
+
+        auto table_find = characters_find.Render();
+
+        Component button_find_confirm = Button(" 确认 ", [&] {
+            menu_man_check(account,0,0,0,toggled_selected_num3, input_browse,3);
         }) | center | size(WIDTH,EQUAL,12);
 
         auto comp = Container::Vertical({
@@ -686,10 +813,18 @@ namespace sys {
             layout,
             button_confirm_mach,
             button_setting,
+            button_modMachNum,
+            input_sys_detectNum,
+            input_sys_machineNum,
+            button_find_confirm,
+            input_sys_find,
+            toggle_find,
+
         });
 
         model_compare = Renderer(comp, [&] {
             return vbox({
+                text("统计总览界面 | 排序") | bold | color(Color::Gold1) | center,
                 separatorDouble(),
                 hbox({
                     separator(),
@@ -754,12 +889,41 @@ namespace sys {
         }) | size(WIDTH,EQUAL,80) | center;
 
         model_find = Renderer(comp, [&] {
-            return vbox({});
-        }) | border | size(WIDTH,EQUAL,60) | center;
+            return vbox({
+                text("模糊查询搜索界面") | bold | color(Color::Gold1) | center,
+                separatorDouble(),
+                hbox({
+                    separator(),
+                    text(" 搜索: ") | bold | color(Color::Gold1),
+                    input_sys_find->Render() | size(WIDTH,EQUAL,36),
+                    separator(),
+                    text(" 搜索选项: ") | bold | color(Color::Gold1),
+                    separator(),
+                    toggle_find->Render(),
+                    separator(),
+                }) | center,
+                table_find | size(WIDTH,EQUAL,100) | center,
+                separatorEmpty(),
+                separatorEmpty(),
+                button_find_confirm->Render() | center | bold,
+                separatorEmpty(),
+
+            });
+        }) | border | size(WIDTH,EQUAL,110) | center;
 
         model_setting = Renderer(comp, [&] {
-            return vbox({});
-        }) | border | size(WIDTH,EQUAL,60) | center;
+            return vbox({
+                text("机房及系统参数修改界面") | center | bold | color(Color::Gold1),
+                separator() | size(WIDTH, EQUAL, 73),
+                hbox(text("  机器数量: ") | bold,  input_sys_machineNum->Render()),
+                hbox(text("  管理邀请码: ") | bold,  input_sys_detectNum->Render()),
+                separatorEmpty(),
+                button_modMachNum->Render() | center,
+                text(test1) | color(Color::Red) | center,
+                text(test2) | color(Color::Red) | center,
+
+            }) | border;
+        }) | size(WIDTH,EQUAL,80) | center;
 
         model_base = Renderer(comp, [&] {
             return vbox({
@@ -792,6 +956,9 @@ namespace sys {
             }else if (flag == 2) {
                 flag = 0;
                 model_base = model_machine_check;
+            }else if (flag == 3) {
+                flag = 0;
+                model_base = model_find;
             }
             return hbox({
                 separatorEmpty(),
