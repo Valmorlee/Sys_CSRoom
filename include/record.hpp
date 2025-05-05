@@ -13,34 +13,36 @@ namespace base {
     class Record {
     private:
 
-        std::string id;
-        std::string name;
-        std::string classId;
-        std::string gender;
-        int machineId;
-        tm startTime;
-        tm endTime;
+        std::string id; //学号
+        std::string name; //姓名
+        std::string classId; //班级
+        std::string gender; //性别
+        int machineId; //设备id
+        tm startTime; //开始时间
+        tm endTime; //结束时间
+
+        int RecordNum;
 
     public:
         Record(const base::Student &student, const tm &startTimeX, const tm &endTimeX, const int &machineId);
         Record();
         ~Record();
 
-        void setId(const std::string &id);
-        void setName(const std::string &name);
-        void setClassId(const std::string &classId);
-        void setGender(const std::string &gender);
-        void setStartTime(const tm &startTime);
-        void setEndTime(const tm &endTime);
-        void setMachineId(int machineId);
+        void setId(const std::string &id); //设置学号
+        void setName(const std::string &name); //设置姓名
+        void setClassId(const std::string &classId); //设置班级
+        void setGender(const std::string &gender); //设置性别
+        void setStartTime(const tm &startTime); //设置开始时间
+        void setEndTime(const tm &endTime); //设置结束时间
+        void setMachineId(int machineId); //设置设备id
 
-        std::string getId() const;
-        std::string getName() const;
-        std::string getClassId() const;
-        std::string getGender() const;
-        tm getStartTime() const;
-        tm getEndTime() const;
-        int getMachineId() const;
+        std::string getId() const; //获取学号
+        std::string getName() const; //获取姓名
+        std::string getClassId() const; //获取班级
+        std::string getGender() const; //获取性别
+        tm getStartTime() const; //获取开始时间
+        tm getEndTime() const; //获取结束时间
+        int getMachineId() const; //获取设备id
 
     };
 

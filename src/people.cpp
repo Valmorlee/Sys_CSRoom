@@ -67,9 +67,6 @@ namespace base {
         this->classId = "NULL";
         this->gender = "NULL";
         this->password = "NULL";
-        this->startTime = {0,0,0,0,0,0,0,0,0};
-        this->endTime = {0,0,0,0,0,0,0,0,0};
-        level = 114514;
     }
 
     Student::Student(const std::string &id, const std::string &classId, const std::string &name, const std::string &gender, const std::string &password, const std::tm &startTime, const std::tm &endTime) {
@@ -78,9 +75,6 @@ namespace base {
         this->name = name;
         this->gender = gender;
         this->password = password;
-        this->startTime = startTime;
-        this->endTime = endTime;
-        level = 114514;
     }
 
     Student::Student(const std::string &id, const std::string &classId, const std::string &name, const std::string &gender, const std::string &password) {
@@ -89,9 +83,6 @@ namespace base {
         this->name = name;
         this->gender = gender;
         this->password = password;
-        this->startTime = {0,0,0,0,0,0,0,0,0};
-        this->endTime = {0,0,0,0,0,0,0,0,0};
-        level = 114514;
     }
 
     Student::Student(const Student &student) {
@@ -100,62 +91,19 @@ namespace base {
         this->name = student.name;
         this->gender = student.gender;
         this->password = student.password;
-        this->startTime = student.startTime;
-        this->endTime = student.endTime;
-        level = 114514;
     }
 
     void Student::setPassword(const std::string &password) {
         this->password = password;
     }
 
-    void Student::setStartTime(const std::tm &startTime) {
-        this->startTime = startTime;
-    }
-
-    void Student::setEndTime(const std::tm &endTime) {
-        this->endTime = endTime;
-    }
 
     std::string Student::getPassword() const {
         return this->password;
     }
 
-    std::tm Student::getStartTime() const {
-        return this->startTime;
-    }
-
-    std::tm Student::getEndTime() const {
-        return this->endTime;
-    }
 
     Student::~Student() = default;
-
-
-    Teacher::Teacher() : People() {
-        this->password = "NULL";
-        level = 114514;
-    }
-
-    Teacher::Teacher(const std::string &id, const std::string &classId, const std::string &name, const std::string &gender, const std::string &password) : People(id, classId, name, gender) {
-        this->password = password;
-        level = 114514;
-    }
-
-    Teacher::Teacher(const Teacher &teacher) {
-        this->password = teacher.password;
-        level = 114514;
-    }
-
-    void Teacher::setPassword(const std::string &password) {
-        this->password = password;
-    }
-
-    std::string Teacher::getPassword() const {
-        return this->password;
-    }
-
-    Teacher::~Teacher() = default;
 
     Manager::Manager(){
         this->id = "NULL";
@@ -163,7 +111,6 @@ namespace base {
         this->name = "NULL";
         this->gender = "NULL";
         this->password = "NULL";
-        level = 114514;
     }
 
     Manager::Manager(const std::string &id, const std::string &classId, const std::string &name, const std::string &gender, const std::string &password){
@@ -172,7 +119,6 @@ namespace base {
         this->name = name;
         this->gender = gender;
         this->password = password;
-        level = 114514;
     }
 
     Manager::Manager(const Manager &manager) {
@@ -181,7 +127,6 @@ namespace base {
         this->name = manager.name;
         this->gender = manager.gender;
         this->password = manager.password;
-        level = 114514;
     }
 
     void Manager::setPassword(const std::string &password) {

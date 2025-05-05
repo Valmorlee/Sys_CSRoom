@@ -53,7 +53,6 @@ namespace timeX {
 
     };
 
-
 }
 
 #endif //UTILS_HPP

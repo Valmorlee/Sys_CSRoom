@@ -6,43 +6,43 @@
 
 namespace cmp {
 
-    bool cmp_id_up(base::Record &a,base::Record &b) {
+    bool cmp_id_up(base::Record &a,base::Record &b) { // id升序
         return a.getId() < b.getId();
     }
 
-    bool cmp_id_down(base::Record &a,base::Record &b) {
+    bool cmp_id_down(base::Record &a,base::Record &b) { // id降序
         return a.getId() > b.getId();
     }
 
-    bool cmp_startTime_up(base::Record &a,base::Record &b) {
+    bool cmp_startTime_up(base::Record &a,base::Record &b) { // 开始时间升序
         return timeX::timeComp(a.getStartTime(), b.getStartTime()) == false;
     }
 
-    bool cmp_startTime_down(base::Record &a,base::Record &b) {
+    bool cmp_startTime_down(base::Record &a,base::Record &b) { // 开始时间降序
         return timeX::timeComp(a.getStartTime(), b.getStartTime()) == true;
     }
 
-    bool cmp_duringTime_up(base::Record &a, base::Record &b) {
+    bool cmp_duringTime_up(base::Record &a, base::Record &b) { // 持续时间升序
         return timeX::timeCal(a.getStartTime(), a.getEndTime()) < timeX::timeCal(b.getStartTime(), b.getEndTime());
     }
 
-    bool cmp_duringTime_down(base::Record &a, base::Record &b) {
+    bool cmp_duringTime_down(base::Record &a, base::Record &b) { // 持续时间降序
         return timeX::timeCal(a.getStartTime(), a.getEndTime()) > timeX::timeCal(b.getStartTime(), b.getEndTime());
     }
 
-    bool cmp_classId_up(base::Record &a, base::Record &b) {
+    bool cmp_classId_up(base::Record &a, base::Record &b) { // 班级升序
         return a.getClassId() < b.getClassId();
     }
 
-    bool cmp_classId_down(base::Record &a, base::Record &b) {
+    bool cmp_classId_down(base::Record &a, base::Record &b) { // 班级降序
         return a.getClassId() > b.getClassId();
     }
 
-    bool cmp_name_up(base::Record &a, base::Record &b) {
+    bool cmp_name_up(base::Record &a, base::Record &b) { // 姓名升序
         return a.getName() < b.getName();
     }
 
-    bool cmp_name_down(base::Record &a, base::Record &b) {
+    bool cmp_name_down(base::Record &a, base::Record &b) { // 姓名降序
         return a.getName() > b.getName();
     }
 

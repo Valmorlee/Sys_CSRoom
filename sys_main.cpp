@@ -32,7 +32,7 @@ namespace sys {
     void menu_modify();
 
     void menu_stu_check(const std::string &account);
-    void menu_man_check(const std::string &account, int num1, int num2, int num3, int num_find, std::string browseSTR, int flag);
+    void menu_man_check(const std::string &account, int num1, int num2, int num3, int num_find, std::string browseSTR);
 
     std::vector<base::Student> list_stu;
     std::vector<base::Manager> list_man;
@@ -40,6 +40,7 @@ namespace sys {
     std::vector<base::Machine> list_mach;
     inline std::string detectNum = "ZJUT";
     inline int machineNum = 40;
+    inline std::string test_modify = ""; // 提示词
 
     Element colorTile(const int &red, const int &green, const int &blue, const int &width, const int &height) { // 创建色块 用于明确机器状态
         return text("") | size(WIDTH, EQUAL, width ) | size(HEIGHT,EQUAL, height) | bgcolor(Color::RGB(red, green, blue));
@@ -101,7 +102,11 @@ namespace sys {
 
         out.open("../out/data_record.txt",std::ios::out);
         for (auto rec : list_rec) {
-            out << rec.getId() << " " << rec.getClassId() << " " << rec.getName() << " " << rec.getGender() << " " << rec.getStartTime().tm_year << " " << rec.getStartTime().tm_mon << " " << rec.getStartTime().tm_mday << " " << rec.getStartTime().tm_hour << " " << rec.getStartTime().tm_min << " " << rec.getStartTime().tm_sec << " " << rec.getEndTime().tm_year << " " << rec.getEndTime().tm_mon << " " << rec.getEndTime().tm_mday << " " << rec.getEndTime().tm_hour << " " << rec.getEndTime().tm_min << " " << rec.getEndTime().tm_sec << " " << rec.getMachineId() << std::endl;
+            out << rec.getId() << " " << rec.getClassId() << " " << rec.getName() << " " << rec.getGender() << " "
+            << rec.getStartTime().tm_year << " " << rec.getStartTime().tm_mon << " " << rec.getStartTime().tm_mday << " "
+            << rec.getStartTime().tm_hour << " " << rec.getStartTime().tm_min << " " << rec.getStartTime().tm_sec << " "
+            << rec.getEndTime().tm_year << " " << rec.getEndTime().tm_mon << " " << rec.getEndTime().tm_mday << " "
+            << rec.getEndTime().tm_hour << " " << rec.getEndTime().tm_min << " " << rec.getEndTime().tm_sec << " " << rec.getMachineId() << std::endl;
         }
         out.close();
 
@@ -112,12 +117,12 @@ namespace sys {
 
     void menu_login() {
 
-        std::string account;
-        std::string password;
+        std::string account; // 账号
+        std::string password; // 密码
 
         Component input_account = Input(&account, "在此输入学号/工号");
         InputOption pwd_option;
-        pwd_option.password = true;
+        pwd_option.password = true; // 密码输入选项：使得密码打码
         Component input_password = Input(&password, "在此输入密码", pwd_option);
 
         std::string test = "";
@@ -126,9 +131,9 @@ namespace sys {
             if (account.empty() || password.empty()) test = "请输入账号/密码";
             else {
 
-                bool checkExist = false;
+                bool checkExist = false; // 检测账户是否存在
 
-                for (auto stu : list_stu) {
+                for (auto stu : list_stu) { // 搜索学生列表
                     if (stu.getId()==account) {
                         checkExist = true;
                         if (stu.getPassword()==password) {
@@ -141,11 +146,11 @@ namespace sys {
                     }
                 }
 
-                for (auto man : list_man) {
+                for (auto man : list_man) { // 搜索管理员列表
                     if (man.getId()==account) {
                         checkExist = true;
                         if (man.getPassword()==password) {
-                            menu_man_check(account, 0, 0, 0, 0, "", 0);
+                            menu_man_check(account, 0, 0, 0, 0, "");
                         }else {
                             test = "密码错误";
                             password = "";
@@ -226,7 +231,6 @@ namespace sys {
         std::string test = "";
 
         Component button_register = Button("  注册", [&] {
-
             //注册...
             if(account.empty() || password.empty() || classid.empty() || name.empty() || gender.empty() ) {
                 test = "请输入完整信息";
@@ -234,7 +238,11 @@ namespace sys {
                 || account.find(":") != account.npos || account.find("*") != account.npos
                 || account.find("?") != account.npos || account.find("\"") != account.npos
                 || account.find("<") != account.npos || account.find(">") != account.npos
-                || account.find("|") != account.npos) {
+                || account.find("|") != account.npos || password.find("\\") != password.npos || password.find("/") != password.npos
+                || password.find(":") != password.npos || password.find("*") != password.npos
+                || password.find("?") != password.npos || password.find("\"") != password.npos
+                || password.find("<") != password.npos || password.find(">") != password.npos
+                || password.find("|") != password.npos) {
                     test    = "输入用户名/密码非法，不能包含 \\/:*?\"<>| 这些字符";
                     account = "";
                     password = "";
@@ -439,7 +447,10 @@ namespace sys {
         screen.Loop(result);
     }
 
-    void menu_man_check(const std::string &account, int num1, int num2, int num3, int num_find, std::string browseSTR, int flag) {
+    inline int flag = 0;
+    inline int num_modify = 0;
+
+    void menu_man_check(const std::string &account, int num1, int num2, int num3, int num_find, std::string browseSTR) {
 
         int man_index = 0;
 
@@ -473,6 +484,7 @@ namespace sys {
         Component model_cal;
         Component model_exit;
         Component model_setting;
+        Component model_modify_record;
 
         // button model类
         Component button_find = Button("  查询", [&] {
@@ -480,9 +492,7 @@ namespace sys {
         }) | size(WIDTH,EQUAL,10) | center;
 
         Component button_compare = Button("  统计", [&] {
-
             model_base = model_compare;
-
         }) | size(WIDTH,EQUAL,10) | center;
 
         Component button_machine_check = Button("  监控", [&] {
@@ -505,6 +515,10 @@ namespace sys {
             exit(EXIT_SUCCESS);
         }) | size(WIDTH,EQUAL,10) | center;
 
+        Component button_modify_record = Button("  修改", [&] {
+            model_base = model_modify_record;
+        }) | size(WIDTH,EQUAL,10) | center;
+
         for (auto rec : list_rec) {
             std::vector<std::string> temp;
 
@@ -513,7 +527,7 @@ namespace sys {
             temp.emplace_back(rec.getGender()+"  ");
             temp.emplace_back(rec.getClassId()+"  ");
 
-            std::string time1 = std::to_string(rec.getStartTime().tm_year + 1900) + "-" + std::to_string(rec.getStartTime().tm_mon + 1) + "-" + std::to_string(rec.getStartTime().tm_mday) + " " + std::to_string(rec.getStartTime().tm_hour) + ":" + std::to_string(rec.getStartTime().tm_min) + ":" + std::to_string(rec.getStartTime().tm_sec);
+            std::string time1 = std::to_string(rec.getStartTime().tm_year + 1900) + "-" + std::to_string(rec.getStartTime().tm_mon + 1)+ "-" + std::to_string(rec.getStartTime().tm_mday) + " " + std::to_string(rec.getStartTime().tm_hour) + ":" + std::to_string(rec.getStartTime().tm_min) + ":" + std::to_string(rec.getStartTime().tm_sec);
             std::string time2 = std::to_string(rec.getEndTime().tm_year + 1900) + "-" + std::to_string(rec.getEndTime().tm_mon + 1) + "-" + std::to_string(rec.getEndTime().tm_mday) + " " + std::to_string(rec.getEndTime().tm_hour) + ":" + std::to_string(rec.getEndTime().tm_min) + ":" + std::to_string(rec.getEndTime().tm_sec);
 
             temp.emplace_back(time1+"  ");
@@ -532,10 +546,10 @@ namespace sys {
         std::vector<std::string> header2 = {" 降序 "," 升序 "};
         Component toggle2 = Toggle(&header2, &toggled_selected_num2);
 
-        Component button_confirm = Button("  确认", [&] {
-
-            menu_man_check(account, toggled_selected_num, toggled_selected_num2, 0, 0, "", 1);
-
+        Component button_confirm_compare = Button("   OK", [&] {
+            flag = 1;
+            menu_man_check(account, toggled_selected_num, toggled_selected_num2, 0, 0, "");
+            flag = 0;
         }) | size(HEIGHT,EQUAL,3) | size(WIDTH,EQUAL,10);
 
         // 排序规则选择
@@ -680,7 +694,9 @@ namespace sys {
         auto table2 = characters2.Render();
 
         auto button_confirm_mach = Button(" ENTER ", [&] {
-            menu_man_check(account, 0,0, select_machine, 0, "", 2);
+            flag = 2;
+            menu_man_check(account, 0,0, select_machine, 0, "");
+            flag = 0;
         }) | center | size(WIDTH,EQUAL,12);
 
         std::string input_MachNum = "";
@@ -796,8 +812,87 @@ namespace sys {
 
         auto table_find = characters_find.Render();
 
+        std::vector<std::vector<std::string>> data_MOD = data_base;
+
+        for (int i = 0; i < data_MOD.size(); i++) {
+            if (i==0) {
+                data_MOD[i].emplace_back("记录序号");
+            }else data_MOD[i].emplace_back(std::to_string(i));
+        }
+
+        auto characters_base = Table({data_MOD}); // modify
+        characters_base.SelectAll().Border(LIGHT);
+        characters_base.SelectRow(0).Decorate(bold);
+        characters_base.SelectRow(0).SeparatorVertical(LIGHT);
+        characters_base.SelectRow(0).Border(DOUBLE);
+
+        auto content_base = characters_base.SelectRows(1, -1);
+
+        content_base.DecorateCellsAlternateRow(color(Color::Blue), 3, 0);
+        content_base.DecorateCellsAlternateRow(color(Color::Cyan), 3, 1);
+        content_base.DecorateCellsAlternateRow(color(Color::White), 3, 2);
+
+        auto table_base = characters_base.Render();
+
+        int selected_numId = num_modify;
+        std::vector<std::string> string_numId;
+        for (int i = 1; i < data_MOD.size(); i++) {
+            string_numId.emplace_back(std::to_string(i));
+        }
+
+        auto layout2 = Container::Vertical({
+            Container::Horizontal({
+                Dropdown(&string_numId, &selected_numId),
+            }),
+        });
+
+        std::string input_mod_id = "";
+        auto input_modify_mod_id = Input(&input_mod_id, "在此输入修改后的学号");
+
+        std::string input_mod_name = "";
+        auto input_modify_mod_name = Input(&input_mod_name, "在此输入修改后的姓名");
+
+        std::string input_mod_gender = "";
+        auto input_modify_mod_gender = Input(&input_mod_gender, "在此输入修改后的性别");
+
+        std::string input_mod_classId = "";
+        auto input_modify_mod_classId = Input(&input_mod_classId, "在此输入修改后的班级");
+
+
+        Component button_modify_modify = Button(" 修改 ", [&] {
+
+            if (input_mod_name == "" && input_mod_id == "" && input_mod_gender == "" && input_mod_classId == "") {
+                test_modify = "请填写至少一行需要修改的数据！";
+                return;
+            }
+
+            if (input_mod_id != "") list_rec[selected_numId].setId(input_mod_id);
+            if (input_mod_name != "") list_rec[selected_numId].setName(input_mod_name);
+            if (input_mod_gender != "") list_rec[selected_numId].setGender(input_mod_gender);
+            if (input_mod_classId != "") list_rec[selected_numId].setClassId(input_mod_classId);
+
+            save();
+            test_modify = "修改成功";
+            flag = 4;
+            menu_man_check(account, 0, 0, 0, 0, "");
+            flag = 0;
+        }) | center | size(WIDTH,EQUAL,12);
+
+        Component button_modify_delete = Button(" 删除 ", [&] {
+
+            list_rec.erase(list_rec.begin()+selected_numId);
+
+            save();
+            test_modify = "删除成功";
+            flag = 4;
+            menu_man_check(account, 0, 0, 0, 0, "");
+            flag = 0;
+        }) | center | size(WIDTH,EQUAL,12);
+
         Component button_find_confirm = Button(" 确认 ", [&] {
-            menu_man_check(account,0,0,0,toggled_selected_num3, input_browse,3);
+            flag = 3;
+            menu_man_check(account,0,0,0,toggled_selected_num3, input_browse);
+            flag = 0;
         }) | center | size(WIDTH,EQUAL,12);
 
         auto comp = Container::Vertical({
@@ -807,9 +902,10 @@ namespace sys {
             button_exit,
             button_out1,
             button_out2,
+            button_modify_record,
             toggle1,
             toggle2,
-            button_confirm,
+            button_confirm_compare,
             layout,
             button_confirm_mach,
             button_setting,
@@ -819,6 +915,13 @@ namespace sys {
             button_find_confirm,
             input_sys_find,
             toggle_find,
+            layout2,
+            button_modify_modify,
+            button_modify_delete,
+            input_modify_mod_classId,
+            input_modify_mod_gender,
+            input_modify_mod_id,
+            input_modify_mod_name,
 
         });
 
@@ -836,14 +939,14 @@ namespace sys {
                     separator(),
                 }) | center,
                 // separator() | size(WIDTH,EQUAL,73),
-                table | size(WIDTH,EQUAL,100) | center,
+                table | size(WIDTH,EQUAL,110) | center,
                 separatorEmpty(),
                 separatorEmpty(),
-                button_confirm->Render() | center | bold,
+                button_confirm_compare->Render() | center | bold,
                 separatorEmpty(),
 
-            })| center | size(WIDTH,EQUAL,100);
-        }) | size(WIDTH,EQUAL,100) | center;
+            })| center | size(WIDTH,EQUAL,110);
+        }) | size(WIDTH,EQUAL,110) | center;
 
         model_exit = Renderer(comp, [&] {
             return hbox({
@@ -854,6 +957,9 @@ namespace sys {
                     button_out1 ->Render() | bold,
 
                 }) | center | border | size(WIDTH,EQUAL,40) | size(HEIGHT,EQUAL,10),
+                separatorEmpty(),
+                separatorEmpty(),
+                separatorEmpty(),
                 vbox({
                     separatorEmpty(),
                     text("退出系统？") | bold | color(Color::Gold1),
@@ -882,11 +988,11 @@ namespace sys {
                 }) | center,
                 cond_base | center,
                 separatorEmpty(),
-                table2 | size(WIDTH,EQUAL,120) | center,
+                table2 | size(WIDTH,EQUAL,100) | center,
                 separatorEmpty(),
 
             }) | center;
-        }) | size(WIDTH,EQUAL,80) | center;
+        }) | size(WIDTH,EQUAL,100) | center;
 
         model_find = Renderer(comp, [&] {
             return vbox({
@@ -902,13 +1008,13 @@ namespace sys {
                     toggle_find->Render(),
                     separator(),
                 }) | center,
-                table_find | size(WIDTH,EQUAL,100) | center,
+                table_find | size(WIDTH,EQUAL,110) | center,
                 separatorEmpty(),
                 separatorEmpty(),
                 button_find_confirm->Render() | center | bold,
                 separatorEmpty(),
 
-            });
+            }) | center;
         }) | border | size(WIDTH,EQUAL,110) | center;
 
         model_setting = Renderer(comp, [&] {
@@ -924,6 +1030,31 @@ namespace sys {
 
             }) | border;
         }) | size(WIDTH,EQUAL,80) | center;
+
+        model_modify_record = Renderer(comp,[&] {
+            return vbox({
+                text("修改记录界面") | bold | center | color(Color::Gold1),
+                separator(),
+                table_base | center | size(WIDTH,EQUAL,150) | center,
+                separatorEmpty(),
+                hbox({
+                    vbox({
+                        separatorEmpty(),
+                        text("请选择操作序号: ") | bold,
+                    }),
+                    layout2->Render() | center,
+                    separatorEmpty(),
+                })| center | border | size(WIDTH,EQUAL,60)| center,
+                hbox({text("学号: ") | bold, input_modify_mod_id->Render()}) | center,
+                hbox({text("姓名: ") | bold, input_modify_mod_name->Render()}) | center,
+                hbox({text("性别: ") | bold, input_modify_mod_gender->Render()}) | center,
+                hbox({text("班级: ") | bold, input_modify_mod_classId->Render()}) | center,
+                separatorEmpty(),
+                hbox({button_modify_modify->Render(), separator(), button_modify_delete->Render()}) | center ,
+                text(test_modify) | bold | color(Color::Red) | center,
+
+            });
+        }) | size(WIDTH,EQUAL,150) | center | border;
 
         model_base = Renderer(comp, [&] {
             return vbox({
@@ -953,19 +1084,32 @@ namespace sys {
             if (flag == 1) {
                 flag = 0;
                 model_base = model_compare;
-            }else if (flag == 2) {
+                toggled_selected_num = 0;
+                toggled_selected_num2 = 0;
+            }
+
+            if (flag == 2) {
                 flag = 0;
                 model_base = model_machine_check;
-            }else if (flag == 3) {
+                select_machine = 0;
+            }
+
+            if (flag == 3) {
                 flag = 0;
                 model_base = model_find;
             }
+
+            if (flag == 4) {
+                flag = 0;
+                model_base = model_modify_record;
+            }
+
             return hbox({
                 separatorEmpty(),
-                vbox({separatorEmpty(), button_find->Render() | center, separatorEmpty(), button_compare->Render() | center, separatorEmpty(), button_machine_check->Render() | center, separatorEmpty(), button_setting->Render() | center, separatorEmpty(), button_exit->Render() | center,separatorEmpty()}) | size(WIDTH,EQUAL,15) | center,
+                vbox({separatorEmpty(), button_find->Render() | center, separatorEmpty(), button_compare->Render() | center, separatorEmpty(), button_machine_check->Render() | center, separatorEmpty(), button_setting->Render() | center,separatorEmpty(), button_modify_record->Render() | center , separatorEmpty(), button_exit->Render() | center,separatorEmpty()}) | size(WIDTH,EQUAL,15) | center,
                 separatorEmpty(),
                 separator(),
-                hbox({model_base->Render() | center}) | center | flex | size(WIDTH,EQUAL,95),
+                hbox({model_base->Render() | center}) | center | flex | size(WIDTH,EQUAL,150),
             });
         });
 
@@ -977,7 +1121,7 @@ namespace sys {
                     separator(),
                     model1->Render(),
 
-                }))| size(WIDTH,EQUAL,120)| center,
+                }))| size(WIDTH,EQUAL,150)| center,
             }) | center;
         });
 

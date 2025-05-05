@@ -9,7 +9,7 @@
 
 namespace base {
 
-    class People {
+    class People { // People基类
     protected:
         std::string id; // 工号/学号/上机账号
         std::string classId; // 所属班级 / 组织
@@ -36,13 +36,8 @@ namespace base {
 
     class Student : public People {
     protected:
-        std::string password;
-        std::tm startTime;
-        std::tm endTime;
-        int level;
-
+        std::string password; // 密码
     public:
-        Student *next;
         Student();
         Student(const std::string &id, const std::string &classId, const std::string &name, const std::string &gender,const std::string &password);
         Student(const std::string &id, const std::string &classId, const std::string &name, const std::string &gender,const std::string &password,const std::tm &startTime,const std::tm &endTime);
@@ -51,39 +46,14 @@ namespace base {
 
         std::string getPassword() const;
         void setPassword(const std::string &password);
-        std::tm getStartTime() const;
-        void setStartTime(const std::tm &startTime);
-        std::tm getEndTime() const;
-        void setEndTime(const std::tm &endTime);
-
-    };
-
-    class Teacher : public People {
-    protected:
-        std::string password;
-        int level;
-
-
-    public:
-        Teacher *next;
-        Teacher();
-        Teacher(const std::string &id, const std::string &classId, const std::string &name, const std::string &gender,const std::string &password);
-        Teacher(const Teacher &teacher);
-        ~Teacher();
-
-        std::string getPassword() const;
-        void setPassword(const std::string &password);
 
     };
 
     class Manager: public People {
     protected:
-        std::string password;
-        int level;
-
+        std::string password; // 密码
 
     public:
-        Manager *next;
         Manager();
         Manager(const std::string &id, const std::string &classId, const std::string &name, const std::string &gender,const std::string &password);
         Manager(const Manager &manager);
@@ -96,12 +66,11 @@ namespace base {
 
     class Machine {
     private:
-        int id;
-        bool flag;
-        Student *user;
+        int id; // 机器编号
+        bool flag; // 是否被使用
+        Student *user; // 正在使用的用户
 
     public:
-
         Machine *next; // 指向下一个机器
 
         Machine(); //创建空机器
