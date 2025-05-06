@@ -178,6 +178,4 @@ namespace base {
 
     Machine::~Machine() = default;
 
-
-
 }

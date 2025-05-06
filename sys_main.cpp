@@ -2,8 +2,10 @@
 // Created by valmorx on 25-4-19.
 //
 
-#include <people.hpp>
+// 万能库
 #include <bits/stdc++.h>
+
+// FTXUI库
 #include <ftxui/dom/elements.hpp>
 #include "ftxui/screen/color.hpp"
 #include <ftxui/screen/screen.hpp>
@@ -18,6 +20,8 @@
 #include "ftxui/util/ref.hpp"
 #include <ctime>
 
+// 自定义库
+#include <people.hpp>
 #include "record.hpp"
 #include "utils.hpp"
 
@@ -25,29 +29,31 @@ using namespace ftxui;
 
 namespace sys {
 
-    const float cash_index = 1.0;
+    const float cash_index = 1.0; // 默认单小时价格
 
-    void menu_register();
-    void menu_login();
-    void menu_modify();
+    void menu_register(); // 注册菜单
+    void menu_login(); // 登陆菜单
+    void menu_modify(); // 修改密码菜单
 
-    void menu_stu_check(const std::string &account);
-    void menu_man_check(const std::string &account);
+    void menu_stu_check(const std::string &account); // 学生可视界面
+    void menu_man_check(const std::string &account); // 管理员可视界面
 
-    std::vector<base::Student> list_stu;
-    std::vector<base::Manager> list_man;
-    std::vector<base::Record> list_rec;
-    std::vector<base::Machine> list_mach;
-    inline std::string detectNum = "ZJUT";
-    inline int machineNum = 40;
-    inline std::string test_modify = ""; // 提示词
+    // 系统总数据
+    std::vector<base::Student> list_stu; // 学生列表
+    std::vector<base::Manager> list_man; // 管理员列表
+    std::vector<base::Record> list_rec; // 记录列表
+    std::vector<base::Machine> list_mach; // 机器列表
+
+    inline std::string detectNum = "ZJUT"; // 管理员邀请码（系统内可修改）
+    inline int machineNum = 40; // 机器数量（系统内可修改）
+    inline std::string test_modify = ""; // 修改界面警告提示词
 
     Element colorTile(const int &red, const int &green, const int &blue, const int &width, const int &height) { // 创建色块 用于明确机器状态
         return text("") | size(WIDTH, EQUAL, width ) | size(HEIGHT,EQUAL, height) | bgcolor(Color::RGB(red, green, blue));
     }
 
-    void preload() {
-        std::string a,b,c,d,e;
+    void preload() { // 预加载数据
+        std::string a,b,c,d,e; // 一些瞎写的临时变量
         std::fstream in;
 
         in.open("../out/data_student.txt", std::ios::in);
@@ -62,8 +68,8 @@ namespace sys {
         }
         in.close();
 
-        int a1, b1, c1, d1, e1 ,f1 ;
-        int a2, b2, c2, d2, e2 ,f2 ,num;
+        int a1, b1, c1, d1, e1 ,f1 ; // 一些瞎写的临时变量
+        int a2, b2, c2, d2, e2 ,f2 ,num; // 一些瞎写的临时变量
 
         in.open("../out/data_record.txt", std::ios::in);
         while (in >> a >> b >> c >> d >> a1 >> b1 >> c1 >> d1 >> e1 >> f1 >>a2 >> b2 >> c2 >> d2 >> e2 >> f2 >> num) {
@@ -86,7 +92,7 @@ namespace sys {
 
     }
 
-    void save() {
+    void save() { // 保存数据
         std::fstream out;
         out.open("../out/data_student.txt",std::ios::out);
         for (auto stu : list_stu) {
@@ -115,19 +121,19 @@ namespace sys {
         out.close();
     }
 
-    void menu_login() {
+    void menu_login() { // 登录菜单
 
         std::string account; // 账号
         std::string password; // 密码
 
         Component input_account = Input(&account, "在此输入学号/工号");
         InputOption pwd_option;
-        pwd_option.password = true; // 密码输入选项：使得密码打码
+        pwd_option.password = true; // 密码输入选项：使得密码打码（
         Component input_password = Input(&password, "在此输入密码", pwd_option);
 
         std::string test = "";
 
-        Component button_login = Button("  登陆", [&] {
+        Component button_login = Button("  登陆", [&] { // 登陆按钮功能
             if (account.empty() || password.empty()) test = "请输入账号/密码";
             else {
 
@@ -159,7 +165,7 @@ namespace sys {
                     }
                 }
 
-                if (!checkExist) {
+                if (!checkExist) { // 检查账户信息是否存在
                     test = "账户信息不存在";
                     password = "";
                     account = "";
@@ -168,23 +174,23 @@ namespace sys {
             }
         }) | size(WIDTH,EQUAL,10) | center;
 
-        Component button_register = Button("  注册", [&] {
-            menu_register();
+        Component button_register = Button("  注册", [&] { // 注册按钮功能
+            menu_register(); // 跳转注册界面
         }) | size(WIDTH,EQUAL,10) | center;
 
-        Component button_modify = Button("修改密码", [&] {
-            menu_modify();
+        Component button_modify = Button("修改密码", [&] { // 修改密码按钮功能
+            menu_modify(); //  跳转修改密码界面
         }) | size(WIDTH,EQUAL,10) | center;
 
-        auto comp = Container::Vertical({
+        auto comp = Container::Vertical({ // 垂直布局组件工具集
             input_account,
             input_password,
             button_login,
             button_register,
-            button_modify
+            button_modify,
         });
 
-        auto renderer = Renderer(comp, [&] {
+        auto renderer = Renderer(comp, [&] { // 菜单界面渲染器
 
             return vbox({
                 text("Hello " + account + " !"),
@@ -195,7 +201,7 @@ namespace sys {
             }) | border | size(WIDTH,EQUAL,60) | center;
         });
 
-        auto result = Renderer(renderer,[&] {
+        auto result = Renderer(renderer,[&] { // 外轮廓渲染
             return vbox({
                 text("浙江工业大学机房收费管理系统欢迎您") | bold | color(LinearGradient(45,Color::Pink1,Color::White)) | center,
                 renderer->Render(),
@@ -210,15 +216,16 @@ namespace sys {
 
     }
 
-    void menu_register() {
-        std::string account;
-        std::string password;
-        std::string detectNumber;
-        std::string classid;
-        std::string name;
-        std::string gender;
+    void menu_register() { // 注册界面
+        std::string account; // 账号
+        std::string password; // 密码
+        std::string detectNumber; // 管理员邀请码
+        std::string classid; // 班级组织
+        std::string name; // 姓名
+        std::string gender; // 性别
         auto screen	= ScreenInteractive::TerminalOutput();
 
+        // input输入框接口组件
         Component input_account = Input(&account, "在此输入学号/工号");
         InputOption pwd_option;
         pwd_option.password = true;
@@ -228,11 +235,11 @@ namespace sys {
         Component input_gender = Input(&gender, "在此输入性别");
         Component input_detectNumber = Input(&detectNumber, "在此输入识别码(可以为空)");
 
-        std::string test = "";
+        std::string test = ""; // 测试用提示词
 
-        Component button_register = Button("  注册", [&] {
+        Component button_register = Button("  注册", [&] { // 注册按钮
             //注册...
-            if(account.empty() || password.empty() || classid.empty() || name.empty() || gender.empty() ) {
+            if(account.empty() || password.empty() || classid.empty() || name.empty() || gender.empty() ) { // 检测所有框是否其中有为空
                 test = "请输入完整信息";
             } else if(account.find("\\") != account.npos || account.find("/") != account.npos
                 || account.find(":") != account.npos || account.find("*") != account.npos
@@ -242,16 +249,16 @@ namespace sys {
                 || password.find(":") != password.npos || password.find("*") != password.npos
                 || password.find("?") != password.npos || password.find("\"") != password.npos
                 || password.find("<") != password.npos || password.find(">") != password.npos
-                || password.find("|") != password.npos) {
+                || password.find("|") != password.npos) { // 判断用户名/密码是否包含非法字符
                     test    = "输入用户名/密码非法，不能包含 \\/:*?\"<>| 这些字符";
                     account = "";
                     password = "";
-            } else {
+            } else { // 输入合法，判断用户名/密码是否存在
 
                 bool checkExist = false;
 
-                if (detectNumber!=detectNum) {
-
+                if (detectNumber!=detectNum) { // 检测输入邀请码是否正确
+                    // 邀请码不正确或者为空
                     for (auto stu : list_stu) {
                         if (stu.getId()==account) {
                             test = "该账号已存在";
@@ -272,7 +279,7 @@ namespace sys {
                     }
 
                 }else {
-
+                    // 邀请码正确
                     for (auto man : list_man) {
                         if (man.getId() == account) {
                             test = "该账号已存在";
@@ -298,12 +305,12 @@ namespace sys {
 
         }) | size(WIDTH,EQUAL,10) | center;
 
-        Component button_back = Button("  返回", [&] {
+        Component button_back = Button("  返回", [&] { // 返回按钮
             test = "";
             screen.Exit();
         }) | size(WIDTH,EQUAL,10) | center;
 
-        auto comp = Container::Vertical({
+        auto comp = Container::Vertical({ // 组件工具集
             input_account,
             input_password,
             input_name,
@@ -314,10 +321,10 @@ namespace sys {
             button_back
         });
 
-        auto renderer = Renderer(comp, [&] {
+        auto renderer = Renderer(comp, [&] { // 界面渲染器
 
             return vbox({
-                text("Hello " + account + " , 欢迎注册!"),
+                text("Hello " + name + " , 欢迎注册!"),
                 separator(),
                 hbox(text("账号: "), input_account->Render()),
                 hbox(text("密码: "), input_password->Render()),
@@ -329,7 +336,7 @@ namespace sys {
             }) | border | size(WIDTH,EQUAL,60) | center;
         });
 
-        auto result = Renderer(renderer,[&] {
+        auto result = Renderer(renderer,[&] { // 外框架渲染界面
             return vbox({
                 text("浙江工业大学机房收费管理系统欢迎您") | bold | color(LinearGradient(45,Color::Pink1,Color::White)) | center,
                 renderer->Render(),
@@ -342,7 +349,8 @@ namespace sys {
         screen.Loop(result);
     }
 
-    void menu_modify() {
+    void menu_modify() { // 修改密码界面
+        // 一堆修改密码需要的变量
         std::string account;
         std::string password;
         std::string detectNumber;
@@ -351,20 +359,22 @@ namespace sys {
         std::string gender;
         auto screen	= ScreenInteractive::TerminalOutput();
 
+        // 创建输入组件
         Component input_account = Input(&account, "在此输入您的学号/工号");
         InputOption pwd_option;
         pwd_option.password = true;
         Component input_password = Input(&password, "在此输入修改后的密码", pwd_option);
         Component input_name = Input(&name, "在此输入您的真实姓名以验证");
 
-        std::string test = "";
+        std::string test = ""; // 测试用提示词
 
-        Component button_register = Button("  更改", [&] {
+        Component button_register = Button("  更改", [&] { // 更改按钮
 
-            if (account.empty() || password.empty() || name.empty()) {
+            if (account.empty() || password.empty() || name.empty()) { // 输入为空时
                 test = "请输入完整信息";
             }else {
                 bool checkExist = false;
+                //  检查用户在管理员用户库和学生用户库是否存在
                 for (auto &stu : list_stu) {
                     if (stu.getId() == account) {
                         checkExist = true;
@@ -400,6 +410,7 @@ namespace sys {
                     }
                 }
 
+                // 检查该用户名是否存在
                 if (!checkExist) {
                         test = "不存在该账户";
                         name = "";
@@ -409,12 +420,12 @@ namespace sys {
             }
         }) | size(WIDTH,EQUAL,10) | center;
 
-        Component button_back = Button("  返回", [&] {
+        Component button_back = Button("  返回", [&] { // 返回按钮
             test = "";
             screen.Exit();
         }) | size(WIDTH,EQUAL,10) | center;
 
-        auto comp = Container::Vertical({
+        auto comp = Container::Vertical({ // 组件工具集
             input_account,
             input_password,
             input_name,
@@ -422,7 +433,7 @@ namespace sys {
             button_back
         });
 
-        auto renderer = Renderer(comp, [&] {
+        auto renderer = Renderer(comp, [&] { // 主界面渲染器
 
             return vbox({
                 text("正在对" + account + " 的账户进行修改!"),
@@ -434,7 +445,7 @@ namespace sys {
             }) | border | size(WIDTH,EQUAL,60) | center;
         });
 
-        auto result = Renderer(renderer,[&] {
+        auto result = Renderer(renderer,[&] { // 外框架渲染
             return vbox({
                 text("浙江工业大学机房收费管理系统欢迎您") | bold | color(LinearGradient(45,Color::Pink1,Color::White)) | center,
                 renderer->Render(),
@@ -447,16 +458,18 @@ namespace sys {
         screen.Loop(result);
     }
 
-    inline int flag = 0;
-    inline int num_modify = 0;
-    inline int num1 = 0;
-    inline int num2 = 0;
-    inline int num3 = 0;
-    inline int num_find = 0;
-    std::string browseSTR = "";
+    // 为了模拟多线程的使用，定义这些全局变量，实现界面切换时线程之间的数据交换
+    inline int flag = 0; // 主模式选择
+    inline int num_modify = 0; // 修改序号选择
+    inline int num1 = 0; // 排序项目选择
+    inline int num2 = 0; // 排序方式选择
+    inline int num3 = 0; // 查询机器状态选择
+    inline int num_find = 0; // 模糊查找项目选择
+    std::string browseSTR = ""; // 模糊查找关键词
 
-    void menu_man_check(const std::string &account) {
+    void menu_man_check(const std::string &account) { // 管理员可视界面
 
+        // 查找当前传入的人员信息
         int man_index = 0;
 
         for (int i = 0; i < list_man.size(); ++i) {
@@ -466,22 +479,26 @@ namespace sys {
             }
         }
 
+        // 设置当前人员基本信息的变量
         std::string _name = list_man[man_index].getName();
         std::string _id = list_man[man_index].getId();
         std::string _classid = list_man[man_index].getClassId();
         std::string _gender = list_man[man_index].getGender();
 
-        std::vector<std::vector<std::string>> data_base;
-        data_base.emplace_back(std::vector<std::string>{" 学号 "," 姓名 "," 性别 "," 班级 "," 上机时间 "," 下机时间 "," 上机机器 "," 上机费用 "});
-        std::vector<std::vector<std::string>> data_CMP = data_base;
-        std::vector<std::vector<std::string>> data_MACH = data_base;
-        std::vector<std::vector<std::string>> data_FIND = data_base;
+        // 界面系统主要交换记录数据库（处理表格，选项等信息）
+        std::vector<std::vector<std::string>> data_base; // 基础系统记录数据库
+        data_base.emplace_back(std::vector<std::string>{" 学号 "," 姓名 "," 性别 "," 班级 "," 上机时间 "," 下机时间 "," 上机机器 "," 上机费用 "}); // 初始化基础数据库
+        std::vector<std::vector<std::string>> data_CMP = data_base; // 比较模式 交换记录数据库
+        std::vector<std::vector<std::string>> data_MACH = data_base; // 机器查询 交换记录数据库
+        std::vector<std::vector<std::string>> data_FIND = data_base; // 查找数据 交换记录数据库
 
-        int toggled_selected_num = num1;
-        int toggled_selected_num2 = num2;
+        int toggled_selected_num = num1; // 储存排序项目选择的变量
+        int toggled_selected_num2 = num2; // 储存排序方式选择的变量
 
         auto screen = ScreenInteractive::TerminalOutput();
-        std::string test = "";
+        std::string test = ""; // 检测提示词
+
+        // 一堆功能界面 以model开头的（
         Component model_base;
         Component model_find;
         Component model_compare;
@@ -491,40 +508,40 @@ namespace sys {
         Component model_setting;
         Component model_modify_record;
 
-        // button model类
-        Component button_find = Button("  查询", [&] {
+        // button按钮功能区
+        Component button_find = Button("  查询", [&] { // 查询按钮功能
             model_base = model_find;
         }) | size(WIDTH,EQUAL,10) | center;
 
-        Component button_compare = Button("  统计", [&] {
+        Component button_compare = Button("  统计", [&] { // 统计按钮功能
             model_base = model_compare;
         }) | size(WIDTH,EQUAL,10) | center;
 
-        Component button_machine_check = Button("  监控", [&] {
+        Component button_machine_check = Button("  监控", [&] { // 机器实时监控按钮功能
             model_base = model_machine_check;
         }) | size(WIDTH,EQUAL,10) | center;
 
-        Component button_exit = Button("  注销", [&] {
+        Component button_exit = Button("  注销", [&] { // 退出系统按钮功能
             model_base = model_exit;
         }) | size(WIDTH,EQUAL,10) | center;
 
-        Component button_setting = Button("  设置", [&] {
+        Component button_setting = Button("  设置", [&] { // 系统参数设置按钮功能
             model_base = model_setting;
         }) | size(WIDTH,EQUAL,10) | center;
 
-        Component button_out1 = Button("  重登", [&] {
+        Component button_out1 = Button("  重登", [&] { // 退出系统按钮功能 中的 重新登陆功能按钮
             menu_login();
         }) | size(WIDTH,EQUAL,10) | center;
 
-        Component button_out2 = Button("  退出", [&] {
+        Component button_out2 = Button("  退出", [&] { // 退出系统按钮功能 中的 退出系统功能按钮
             exit(EXIT_SUCCESS);
         }) | size(WIDTH,EQUAL,10) | center;
 
-        Component button_modify_record = Button("  修改", [&] {
+        Component button_modify_record = Button("  修改", [&] { // 修改记录按钮功能
             model_base = model_modify_record;
         }) | size(WIDTH,EQUAL,10) | center;
 
-        for (auto rec : list_rec) {
+        for (auto rec : list_rec) { // 遍历记录列表 完全初始化 base 数据库
             std::vector<std::string> temp;
 
             temp.emplace_back(rec.getId()+"  ");
@@ -543,18 +560,21 @@ namespace sys {
             data_base.emplace_back(temp);
         }
 
-        data_CMP = data_base;
+        // 记录排序功能实现 以下-------------------------------------------------------------------------------------------------------------------------------------------
 
+        data_CMP = data_base; // 将基础数据库复制给排序数据库
+
+        // 创建选择栏目组件
         std::vector<std::string> header = {" 学号 "," 姓名 "," 班级 ", " 上机开始时间 ", " 上机时长 "};
         Component toggle1 = Toggle(&header, &toggled_selected_num);
 
         std::vector<std::string> header2 = {" 降序 "," 升序 "};
         Component toggle2 = Toggle(&header2, &toggled_selected_num2);
 
-        Component button_confirm_compare = Button("   OK", [&] {
-            flag = 1;
-            num1 = toggled_selected_num;
-            num2 = toggled_selected_num2;
+        Component button_confirm_compare = Button("   OK", [&] { // 确认排序 实现排序
+            flag = 1; // 排序功能的flag表示
+            num1 = toggled_selected_num; // 传出值1
+            num2 = toggled_selected_num2; // 传出值2
             menu_man_check(account); // 还原
             flag = 0;
         }) | size(HEIGHT,EQUAL,3) | size(WIDTH,EQUAL,10);
@@ -603,10 +623,10 @@ namespace sys {
 
         }
 
-        data_CMP.clear();
+        data_CMP.clear(); // 清空比较数据库
         data_CMP.emplace_back(std::vector<std::string>{" 学号 "," 姓名 "," 性别 "," 班级 "," 上机时间 "," 下机时间 "," 上机机器 "," 上机费用 "});
 
-        for (auto &rec : data_records) {
+        for (auto &rec : data_records) { // 遍历记录 添加比较数据库
             std::vector<std::string> temp;
 
             temp.emplace_back(rec.getId()+"  ");
@@ -625,6 +645,7 @@ namespace sys {
             data_CMP.emplace_back(temp);
         }
 
+        // 设置比较数据库呈现的表格组件 以及一些美化组件
         auto characters = Table({data_CMP});
         characters.SelectAll().Border(LIGHT);
         characters.SelectRow(0).Decorate(bold);
@@ -637,14 +658,18 @@ namespace sys {
         content.DecorateCellsAlternateRow(color(Color::Cyan), 3, 1);
         content.DecorateCellsAlternateRow(color(Color::White), 3, 2);
 
-        auto table = characters.Render();
+        auto table = characters.Render(); // 这个就是设置后的表格接口了
 
-        int select_machine = num3;
-        Element cond_base = separatorEmpty();
-        Element cond_Free = vbox({text("空闲中") | color(Color::Green) | bold | center, colorTile(0,255,0,10,1) | center}) | center;
-        Element cond_Busy = vbox({text("占用中") | color(Color::Red) | bold | center, colorTile(255,0,0,10,1) | center}) | center;
 
-        for (auto &mach : list_mach) {
+        // 机器查询以及实时监控功能实现 以下-------------------------------------------------------------------------------------------------------------------------------------
+
+        int select_machine = num3; // 传入值
+        Element cond_base = separatorEmpty(); // 默认状态
+        Element cond_Free = vbox({text("空闲中") | color(Color::Green) | bold | center, colorTile(0,255,0,10,1) | center}) | center; // 空闲状态
+        Element cond_Busy = vbox({text("占用中") | color(Color::Red) | bold | center, colorTile(255,0,0,10,1) | center}) | center; // 占用状态
+        // 以上3个Element为三个状态的显示，其中内嵌了颜色块，颜色块为colorTile函数返回的Element来醒目表示状态
+
+        for (auto &mach : list_mach) { // 检测当前选中的机位是否是被占用的
             if (mach.getId() == select_machine + 1) {
                 if (mach.getFlag()) {
                     cond_base = cond_Busy;
@@ -652,21 +677,21 @@ namespace sys {
             }
         }
 
-        std::vector<std::string> string_mach;
+        std::vector<std::string> string_mach; // 排版机位信息以供dropdown列表使用
         for (auto mach : list_mach) {
             string_mach.emplace_back(std::to_string(mach.getId()) + "号机位");
         }
 
-        auto layout = Container::Vertical({
+        auto layout = Container::Vertical({ // 垂直布局的dropdown组件实现
             Container::Horizontal({
                 Dropdown(&string_mach, &select_machine),
             }),
         });
 
-        data_MACH.clear();
+        data_MACH.clear(); // 清空机器状态数据
         data_MACH.emplace_back(std::vector<std::string>{" 学号 "," 姓名 "," 班级 "," 上机时间 "," 下机时间 "," 上机费用 "});
 
-        for (auto &rec : data_records) {
+        for (auto &rec : data_records) { // 遍历所有记录 完善机器状态数据库
 
             if (rec.getMachineId() == select_machine) {
                 std::vector<std::string> temp;
@@ -686,6 +711,7 @@ namespace sys {
             }
         }
 
+        // 呈现机器状态的表格 表示当前机器在记录库中历史使用记录数据
         auto characters2 = Table({data_MACH});
         characters2.SelectAll().Border(LIGHT);
         characters2.SelectRow(0).Decorate(bold);
@@ -698,15 +724,28 @@ namespace sys {
         content2.DecorateCellsAlternateRow(color(Color::Cyan), 3, 1);
         content2.DecorateCellsAlternateRow(color(Color::White), 3, 2);
 
-        auto table2 = characters2.Render();
+        auto table2 = characters2.Render(); // 最终呈现出的机器状态数据表格
 
-        auto button_confirm_mach = Button(" ENTER ", [&] {
+        auto button_confirm_mach = Button(" ENTER ", [&] { // 确认查询机器状态的功能按钮
+
+            for (auto &mach : list_mach) { // 检测当前选中的机位是否是被占用的
+                if (mach.getId() == select_machine + 1) {
+                    if (mach.getFlag()) {
+                        cond_base = cond_Busy;
+                    }else cond_base = cond_Free;
+                }
+            }
+
             flag = 2;
             num3 = select_machine;
             menu_man_check(account);
             flag = 0;
         }) | center | size(WIDTH,EQUAL,12);
 
+        // 系统参数设置功能实现 以下-----------------------------------------------------------------------------------------------------------------------------------------
+
+
+        // 创建机器总数和管理员邀请码的输入框组件
         std::string input_MachNum = "";
         auto input_sys_machineNum = Input(&input_MachNum, std::to_string(machineNum));
 
@@ -721,12 +760,19 @@ namespace sys {
             return true;
         };
 
-        std::string test1 = "",test2 = "";
-        Component button_modMachNum = Button(" 修改 ", [&] {
+        std::string test1 = "",test2 = ""; // 检测提示词
+        Component button_modMachNum = Button(" 修改 ", [&] { // 修改功能按钮
 
             if (!input_MachNum.empty()) {
                 if (isNum(input_MachNum)) {
                     int tempNum = std::stoi(input_MachNum);
+
+                    if (tempNum >= machineNum) {
+                        for (int i = machineNum; i < tempNum; i++) {
+                            list_mach.emplace_back(i+1);
+                        }
+                    }else list_mach.resize(tempNum);
+
                     machineNum = tempNum;
                     test1 = "机房机器数量修改成功";
                 }else {
@@ -739,21 +785,25 @@ namespace sys {
                 test2 = "机房管理员邀请码修改成功";
             }
 
-            save();
+            save(); // 保存
         }) | center | size(WIDTH,EQUAL,12);
 
-        // 查询界面
-        std::string input_browse = browseSTR;
+        // 记录查询界面功能实现 以下-----------------------------------------------------------------------------------------------------------------------------------------------
+
+        // 创建模糊查询关键词输入框组件
+        std::string input_browse = browseSTR; // 传入值
         auto input_sys_find = Input(&input_browse, "在此输入关键词");
 
-        int toggled_selected_num3 = num_find; // 需要修改 num_find
+        // 创建模糊查询选项组件
+        int toggled_selected_num3 = num_find;
         std::vector<std::string> toggle = {" 学号 "," 姓名 "," 班级 "};
         Component toggle_find = Toggle(&toggle, &toggled_selected_num3);
 
+        //  清空查询数据库
         data_FIND.clear();
         data_FIND.emplace_back(std::vector<std::string>{" 学号 "," 姓名 "," 性别 "," 班级 "," 上机时间 "," 下机时间 "," 上机机器 "," 上机费用 "});
 
-        for (const auto &rec : data_records) {
+        for (const auto &rec : data_records) { // 根据传入的选项和关键词查询数据库中内容 并添加到模糊查询数据库中
             std::vector<std::string> temp;
             // 先选择选项再查找关键词
             if (toggled_selected_num3 == 0) {
@@ -806,6 +856,7 @@ namespace sys {
             if (!temp.empty()) data_FIND.emplace_back(temp);
         }
 
+        // 呈现模糊查询数据库的表格
         auto characters_find = Table({data_FIND});
         characters_find.SelectAll().Border(LIGHT);
         characters_find.SelectRow(0).Decorate(bold);
@@ -818,16 +869,27 @@ namespace sys {
         content_find.DecorateCellsAlternateRow(color(Color::Cyan), 3, 1);
         content_find.DecorateCellsAlternateRow(color(Color::White), 3, 2);
 
-        auto table_find = characters_find.Render();
+        auto table_find = characters_find.Render(); // 最后呈现的数据表格
+
+        Component button_find_confirm = Button(" 确认 ", [&] { // 查找确认功能实现按钮
+            flag = 3;
+            num_find = toggled_selected_num3;
+            browseSTR = input_browse;
+            menu_man_check(account);
+            flag = 0;
+        }) | center | size(WIDTH,EQUAL,12);
+
+        // 修改记录界面功能实现 以下-----------------------------------------------------------------------------------------------------------------------------------------------
 
         std::vector<std::vector<std::string>> data_MOD = data_base;
 
-        for (int i = 0; i < data_MOD.size(); i++) {
+        for (int i = 0; i < data_MOD.size(); i++) { // 初始化修改记录数据库表格
             if (i==0) {
                 data_MOD[i].emplace_back("记录序号");
             }else data_MOD[i].emplace_back(std::to_string(i));
         }
 
+        // 创建总览记录数据库及其表格样式
         auto characters_base = Table({data_MOD}); // modify
         characters_base.SelectAll().Border(LIGHT);
         characters_base.SelectRow(0).Decorate(bold);
@@ -840,20 +902,21 @@ namespace sys {
         content_base.DecorateCellsAlternateRow(color(Color::Cyan), 3, 1);
         content_base.DecorateCellsAlternateRow(color(Color::White), 3, 2);
 
-        auto table_base = characters_base.Render();
+        auto table_base = characters_base.Render(); // 最终呈现的表格组件
 
-        int selected_numId = num_modify;
-        std::vector<std::string> string_numId;
+        int selected_numId = num_modify; // 传入的numId
+        std::vector<std::string> string_numId; // 设置好dropdown所需要的列表
         for (int i = 1; i < data_MOD.size(); i++) {
             string_numId.emplace_back(std::to_string(i));
         }
 
-        auto layout2 = Container::Vertical({
+        auto layout2 = Container::Vertical({ // dropdown样式的记录选择组件
             Container::Horizontal({
                 Dropdown(&string_numId, &selected_numId),
             }),
         });
 
+        // 一堆修改记录输入框的组件
         std::string input_mod_id = "";
         auto input_modify_mod_id = Input(&input_mod_id, "在此输入修改后的学号");
 
@@ -872,11 +935,12 @@ namespace sys {
         std::string input_mod_endTime = "";
         auto input_modify_mod_endTime = Input(&input_mod_endTime, "在此输入需修改的结束时间");
 
-        std::string test_mod_time = "请使用 \"xxxx-xx-xx xx:xx:xx\" 的时间格式";
+        std::string test_mod_time = "请使用 \"xxxx-xx-xx xx:xx:xx\" 的时间格式"; // 固定提示词
 
 
-        Component button_modify_modify = Button(" 修改 ", [&] {
+        Component button_modify_modify = Button(" 修改 ", [&] { // 修改功能实现按钮
 
+            // 输入为空检查
             if (input_mod_name.empty() && input_mod_id.empty() && input_mod_gender.empty() && input_mod_classId.empty() && input_mod_startTime.empty() && input_mod_endTime.empty()) {
                 test_modify = "请填写至少一行需要修改的数据！";
                 return;
@@ -887,12 +951,14 @@ namespace sys {
             if (!input_mod_gender.empty()) list_rec[selected_numId].setGender(input_mod_gender);
             if (!input_mod_classId.empty()) list_rec[selected_numId].setClassId(input_mod_classId);
 
+            // 输入时间格式检查
             if (!input_mod_startTime.empty()) {
-                if (input_mod_startTime.size() != 19) {
+                if (input_mod_startTime.size() != 19) { // 时间字符串长度检查
                     test_modify = "请填写正确的开始时间格式!";
                     return;
                 }
 
+                // 时间字符串格式检查
                 std::string str_year = input_mod_startTime.substr(0, 4);
                 std::string str_month = input_mod_startTime.substr(5, 2);
                 std::string str_day = input_mod_startTime.substr(8, 2);
@@ -912,26 +978,29 @@ namespace sys {
                 int minute = std::stoi(str_minute);
                 int second = std::stoi(str_second);
 
-                tm mod_startTime = timeX::timeTrans(year, month, day, hour, minute, second);
+                tm mod_startTime = timeX::timeTrans(year, month, day, hour, minute, second); // 输入时间转换成tm格式
                 // 开始时间不能晚于结束时间
-                if (timeX::timeComp(list_rec[selected_numId].getEndTime(), mod_startTime) == false) {
+                if (timeX::timeComp(list_rec[selected_numId].getEndTime(), mod_startTime) == false) { // 如果结束时间早于开始时间，则提示错误
                     test_modify = "开始时间不能晚于结束时间!";
                     return;
                 }
 
-                if (timeX::timeCheck(mod_startTime) == false) {
+                if (timeX::timeCheck(mod_startTime) == false) { // 如果输入时间数据常识性错误，则提示错误
                     test_modify = "输入时间数据错误！请填写正确格式!";
                     return;
                 }
 
-                list_rec[selected_numId].setStartTime(mod_startTime);
+                list_rec[selected_numId].setStartTime(mod_startTime); // 修改开始时间
             }
 
+            // 结束时间格式检查
             if (!input_mod_endTime.empty()) {
-                if (input_mod_endTime.size() != 19) {
+                if (input_mod_endTime.size() != 19) { // 如果输入时间数据长度错误，则提示错误
                     test_modify = "请填写正确的结束时间格式!";
                     return;
                 }
+
+                // 判断输入时间格式是否正确
                 std::string str_year = input_mod_endTime.substr(0, 4);
                 std::string str_month = input_mod_endTime.substr(5, 2);
                 std::string str_day = input_mod_endTime.substr(8, 2);
@@ -951,8 +1020,8 @@ namespace sys {
                 int minute = std::stoi(str_minute);
                 int second = std::stoi(str_second);
 
-                tm mod_endTime = timeX::timeTrans(year, month, day, hour, minute, second);
-                if (timeX::timeCheck(mod_endTime) == false) {
+                tm mod_endTime = timeX::timeTrans(year, month, day, hour, minute, second); // 将输入的时间转换为tm结构体
+                if (timeX::timeCheck(mod_endTime) == false) { // 判断输入的时间是否有常识性错误
                     test_modify = "输入时间数据错误！请填写正确格式!";
                     return;
                 }
@@ -964,33 +1033,25 @@ namespace sys {
                 list_rec[selected_numId].setEndTime(mod_endTime);
             }
 
-            save();
-            test_modify = "修改成功";
+            save(); // 保存修改
+            test_modify = "修改成功"; // 显示修改成功
             flag = 4;
-            menu_man_check(account);
+            menu_man_check(account); // 显示刷新
             flag = 0;
         }) | center | size(WIDTH,EQUAL,12);
 
-        Component button_modify_delete = Button(" 删除 ", [&] {
+        Component button_modify_delete = Button(" 删除 ", [&] { // 删除功能实现按钮
 
-            list_rec.erase(list_rec.begin()+selected_numId);
+            list_rec.erase(list_rec.begin()+selected_numId); // 删除记录
 
             save();
             test_modify = "删除成功";
             flag = 4;
-            menu_man_check(account);
+            menu_man_check(account); // 显示刷新
             flag = 0;
         }) | center | size(WIDTH,EQUAL,12);
 
-        Component button_find_confirm = Button(" 确认 ", [&] {
-            flag = 3;
-            num_find = toggled_selected_num3;
-            browseSTR = input_browse;
-            menu_man_check(account);
-            flag = 0;
-        }) | center | size(WIDTH,EQUAL,12);
-
-        auto comp = Container::Vertical({
+        auto comp = Container::Vertical({ // 交互组件功能工具集
             button_find,
             button_compare,
             button_machine_check,
@@ -1022,7 +1083,7 @@ namespace sys {
 
         });
 
-        model_compare = Renderer(comp, [&] {
+        model_compare = Renderer(comp, [&] { // 排序界面渲染器
             return vbox({
                 text("统计总览界面 | 排序") | bold | color(Color::Gold1) | center,
                 separatorDouble(),
@@ -1045,7 +1106,7 @@ namespace sys {
             })| center | size(WIDTH,EQUAL,110);
         }) | size(WIDTH,EQUAL,110) | center;
 
-        model_exit = Renderer(comp, [&] {
+        model_exit = Renderer(comp, [&] { // 退出界面渲染器
             return hbox({
                 vbox({
                     separatorEmpty(),
@@ -1067,6 +1128,7 @@ namespace sys {
             }) | center;
         });
 
+        // 机器查询界面渲染器
         model_machine_check = Renderer(comp, [&] { // 做成抽屉查询，竖直排列分别是抽屉选择，确定按钮，test&状态图标色块（红绿区分），表格为最近使用这台机器的人
 
             return vbox({
@@ -1091,7 +1153,7 @@ namespace sys {
             }) | center;
         }) | size(WIDTH,EQUAL,100) | center;
 
-        model_find = Renderer(comp, [&] {
+        model_find = Renderer(comp, [&] { // 模糊搜索查询界面渲染器
             return vbox({
                 text("模糊查询搜索界面") | bold | color(Color::Gold1) | center,
                 separatorDouble(),
@@ -1114,7 +1176,7 @@ namespace sys {
             }) | center;
         }) | border | size(WIDTH,EQUAL,110) | center;
 
-        model_setting = Renderer(comp, [&] {
+        model_setting = Renderer(comp, [&] { // 设置界面渲染器
             return vbox({
                 text("机房及系统参数修改界面") | center | bold | color(Color::Gold1),
                 separator() | size(WIDTH, EQUAL, 73),
@@ -1128,7 +1190,7 @@ namespace sys {
             }) | border;
         }) | size(WIDTH,EQUAL,80) | center;
 
-        model_modify_record = Renderer(comp,[&] {
+        model_modify_record = Renderer(comp,[&] { // 修改记录界面渲染器
             return vbox({
                 text("修改记录界面") | bold | center | color(Color::Gold1),
                 separator(),
@@ -1171,7 +1233,7 @@ namespace sys {
             });
         }) | size(WIDTH,EQUAL,150) | center | border;
 
-        model_base = Renderer(comp, [&] {
+        model_base = Renderer(comp, [&] { // 欢迎界面渲染器
             return vbox({
                 text(" ________    _____   __  __   ______   ") | center | bold,
                 text("/\\_____  \\  /\\___ \\ /\\ \\/\\ \\ /\\__  _\\  ") | center | bold,
@@ -1195,7 +1257,7 @@ namespace sys {
             }) | center;
         });
 
-        Component model1 = Renderer(comp, [&] {
+        Component model1 = Renderer(comp, [&] { // 主界面渲染器
             if (flag == 1) {
                 flag = 0;
                 model_base = model_compare;
@@ -1228,7 +1290,7 @@ namespace sys {
             });
         });
 
-        auto result = Renderer(model1,[&] {
+        auto result = Renderer(model1,[&] { // 外框架渲染器
             return vbox({
                 separatorEmpty(),
                 window(text("浙江工业大学机房收费管理系统")| bold | color(LinearGradient(45,Color::Pink1,Color::White)) | center,vbox({
@@ -1245,10 +1307,12 @@ namespace sys {
 
     }
 
-    inline int flag_stu = 0;
+    inline int flag_stu = 0; // 主选择模式（学生版）
+    inline int num_machine = 0; // 机器选择
 
-    void menu_stu_check(const std::string &account) {
+    void menu_stu_check(const std::string &account) { // 学生可视界面
 
+        // 获取当前学生账户信息
         int stu_index = 0;
 
         for (int i = 0; i < list_stu.size(); ++i) {
@@ -1258,13 +1322,16 @@ namespace sys {
             }
         }
 
+        // 一堆当前学生信息的变量
         std::string name = list_stu[stu_index].getName();
         std::string id = list_stu[stu_index].getId();
         std::string classid = list_stu[stu_index].getClassId();
         std::string gender = list_stu[stu_index].getGender();
 
         auto screen = ScreenInteractive::TerminalOutput();
-        std::string test = "", test2 = "";
+        std::string test = "", test2 = ""; // 提示词
+
+        // 一堆窗口界面组件
         Component model_base;
         Component model_upMachine;
         Component model_downMachine;
@@ -1279,6 +1346,7 @@ namespace sys {
 
         Component model_timeMonitor2 = model_timeMonitor2_ori;
 
+        // 一堆功能按钮，功能应该很明显（懒得写注释
         Component button_start_machine = Button("  上机" , [&] {
             model_base = model_upMachine; // 切换到上机界面
         }) | size(WIDTH,EQUAL,10) | center;
@@ -1296,7 +1364,8 @@ namespace sys {
         }) | size(WIDTH,EQUAL,10) | center;
 
 
-        int select_machine = 0;
+        // 创建dropdown组件
+        int select_machine = num_machine;
         std::vector<std::string> string_mach;
         for (auto mach : list_mach) {
             string_mach.emplace_back(std::to_string(mach.getId()) + "号机位");
@@ -1308,16 +1377,17 @@ namespace sys {
             }),
         });
 
-
+        // 创建实时时间管理器
         timeX::timeViewer tv;
-        tm timex = tv.getTime(); // Rec startTime
-        tm timey = tv.getTime(); // Rec liveTime
-        tm timez = tv.getTime(); // Rec endTime
+        tm timex = tv.getTime(); // 记录开始时间
+        tm timey = tv.getTime(); // 记录实时时间
+        tm timez = tv.getTime(); // 记录结束时间
 
+        // 开始上机和下机的按钮（起名的时候略有些抽风
         Component button_upupup;
         Component button_downdowndown;
 
-        button_upupup = Button("  开始", [&] {
+        button_upupup = Button("  开始", [&] { // 开始上机功能按钮
             // button_upupup = Renderer([&] {
             //    return vbox({});
             // });
@@ -1328,10 +1398,11 @@ namespace sys {
             }
 
             // stu->setStartTime(tv.getTime());
-            timex = tv.getTime();
-            list_mach[select_machine - 1].setFlag(1);
+            timex = tv.getTime(); // 获取当前时间以当作开始时间
+            list_mach[select_machine].setFlag(1); // 设置机位状态为占用
+            num_machine = select_machine; // 记录当前机位编号
 
-            model_timeMonitor = Renderer([&] {
+            model_timeMonitor = Renderer([&] { // 更换上机界面中timeMonitor组件的界面
                 timey = tv.getTime();
                 return vbox({
                     separatorEmpty(),
@@ -1339,7 +1410,7 @@ namespace sys {
                 });
             });
 
-            model_timeMonitor2 = Renderer([&] {
+            model_timeMonitor2 = Renderer([&] { // 更换下机界面中的timeMonitor2的界面
                 timey = tv.getTime();
                 long num = timeX::timeCal(timex,timey);
 
@@ -1352,10 +1423,10 @@ namespace sys {
 
         }) | size(WIDTH,EQUAL,10) | center;
 
-        button_downdowndown = Button("  结束", [&] {
+        button_downdowndown = Button("  结束", [&] { // 下机功能按钮
 
-            timez = tv.getTime();
-            list_mach[select_machine - 1].setFlag(0);
+            timez = tv.getTime(); // 获取当前时间以当作下机时间
+            list_mach[select_machine].setFlag(0); // 设置当前机位为空闲状态
 
             // button_downdowndown = Renderer([&] {
             //     return vbox({});
@@ -1363,7 +1434,7 @@ namespace sys {
 
             // stu->setEndTime(tv.getTime());
 
-            model_timeMonitor2 = Renderer([&] {
+            model_timeMonitor2 = Renderer([&] { // 更换下机界面中的timeMonitor2的界面
                 return vbox({
                     separatorEmpty(),
                     text("结束时间：" + std::to_string(timez.tm_year + 1900) + "-" + std::to_string(timez.tm_mon + 1) + "-" + std::to_string(timez.tm_mday) + " " + std::to_string(timez.tm_hour) + ":" + std::to_string(timez.tm_min) + ":" + std::to_string(timez.tm_sec)) | center | color(Color::Red),
@@ -1371,30 +1442,33 @@ namespace sys {
             });
 
 
-            model_timeMonitor = Renderer([&] {
+            model_timeMonitor = Renderer([&] { // 还原上机界面中的timeMonitor界面
                 return vbox({});
             });
 
             list_rec.emplace_back(base::Record(base::Student(id,classid,name,gender,"NULL"),timex,timez,select_machine));
 
-            save();
+            save(); // 保存到文件
             flag_stu = 1;
-            menu_stu_check(account);
+            menu_stu_check(account); // 显示刷新 后台立马就能看到
             flag_stu = 0;
 
         }) | size(WIDTH,EQUAL,10) | center;
 
-        Component button_outoutout1 = Button("  重登", [&] {
+        Component button_outoutout1 = Button("  重登", [&] { // 登出按钮
 
             menu_login();
 
         }) | size(WIDTH,EQUAL,10) | center;
 
-        Component button_outoutout2 = Button("  退出", [&] {
+        Component button_outoutout2 = Button("  退出", [&] { // 退出按钮
 
             exit(EXIT_SUCCESS);
 
         }) | size(WIDTH,EQUAL,10) | center;
+
+        // 查看功能界面实现 以下--------------------------------------------------------------------------------------------------------------------------------------------------------
+        //（ 学生界面的查看功能只能查看自己的记录 只有管理员能看到所有人的 ）
 
         std::vector<std::vector<std::string>> data;
         data.emplace_back(std::vector<std::string>{" 学号 "," 姓名 "," 性别 "," 班级 "," 上机时间 "," 下机时间 "," 上机机器 "," 上机费用 "});
@@ -1419,6 +1493,7 @@ namespace sys {
             }
         }
 
+        // 数据呈现进表格
         auto characters = Table({data});
         characters.SelectAll().Border(LIGHT);
         characters.SelectRow(0).Decorate(bold);
@@ -1431,12 +1506,12 @@ namespace sys {
         content.DecorateCellsAlternateRow(color(Color::Cyan), 3, 1);
         content.DecorateCellsAlternateRow(color(Color::White), 3, 2);
 
-        auto table = characters.Render() | center ;
+        auto table = characters.Render() | center ; // 最终呈现的表格
 
 
-        std::string timeNow;
+        std::string timeNow; // 当前时间提示字符串
 
-        auto comp = Container::Vertical({
+        auto comp = Container::Vertical({ // 组件功能工具集
             button_start_machine,
             button_end_machine,
             button_logout,
@@ -1448,7 +1523,7 @@ namespace sys {
             layout,
         });
 
-        model_upMachine = Renderer(comp, [&] {
+        model_upMachine = Renderer(comp, [&] { // 上机界面渲染
             return vbox({
                 separatorEmpty(),
                 text("欢迎 " + name + " 同学上机！") | center | bold,
@@ -1471,7 +1546,7 @@ namespace sys {
             }) | center;
         });
 
-        model_downMachine = Renderer(comp, [&] {
+        model_downMachine = Renderer(comp, [&] { // 下机界面渲染
             return vbox({
                 separatorEmpty(),
                 text("这里是下机界面，欢迎 " + name + " 同学下次上机！") | center | bold | color(Color::Gold1),
@@ -1484,7 +1559,7 @@ namespace sys {
             }) | center;
         });
 
-        model_exit = Renderer(comp, [&] {
+        model_exit = Renderer(comp, [&] { // 退出窗口界面渲染
             return hbox({
                 vbox({
                     separatorEmpty(),
@@ -1503,7 +1578,7 @@ namespace sys {
             }) | center;
         });
 
-        model_check = Renderer(comp, [&] {
+        model_check = Renderer(comp, [&] { // 查看界面渲染
             return vbox({
                 separatorEmpty(),
                 text("  这里是查看界面，欢迎 " + name + " 同学查看自己上机记录！") | bold | color(Color::Gold1),
@@ -1515,7 +1590,7 @@ namespace sys {
             });
         });
 
-        model_base = Renderer(comp, [&] {
+        model_base = Renderer(comp, [&] { // 欢迎界面渲染
             return vbox({
                 text(" ________    _____   __  __   ______   ") | center | bold,
                 text("/\\_____  \\  /\\___ \\ /\\ \\/\\ \\ /\\__  _\\  ") | center | bold,
@@ -1539,7 +1614,7 @@ namespace sys {
             }) | center;
         });
 
-        Component model1 = Renderer(comp, [&] {
+        Component model1 = Renderer(comp, [&] { // 主界面渲染
 
             if (flag_stu == 1) {
                 flag_stu = 0;
@@ -1555,7 +1630,7 @@ namespace sys {
             });
         });
 
-        auto result = Renderer(model1,[&] {
+        auto result = Renderer(model1,[&] { // 外框架渲染
             return vbox({
                 separatorEmpty(),
                 window(text("浙江工业大学机房收费管理系统")| bold | color(LinearGradient(45,Color::Pink1,Color::White)) | center,vbox({
@@ -1578,6 +1653,7 @@ int main() {
 
     sys::preload();
     sys::menu_login();
+    sys::save();
 
     return EXIT_SUCCESS;
 }
