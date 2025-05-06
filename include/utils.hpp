@@ -40,6 +40,8 @@ namespace timeX {
     bool isLeapYear(int year);
     bool timeComp(tm t1, tm t2);
     long timeCal(const tm &t1, const tm &t2); // 时间差计算 返回值为小时 层级优化
+    tm timeTrans(int year, int month, int day, int hour, int minute, int second);
+    bool timeCheck(tm t1);
 
     class timeViewer { // 时间查看器
     private:

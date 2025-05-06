@@ -3,10 +3,10 @@
 //
 
 #include <people.hpp>
-#include<bits/stdc++.h>
-#include<ftxui/dom/elements.hpp>
+#include <bits/stdc++.h>
+#include <ftxui/dom/elements.hpp>
 #include "ftxui/screen/color.hpp"
-#include<ftxui/screen/screen.hpp>
+#include <ftxui/screen/screen.hpp>
 #include "ftxui/component/captured_mouse.hpp"
 #include "ftxui/component/component.hpp"
 #include "ftxui/component/mouse.hpp"
@@ -16,7 +16,7 @@
 #include "ftxui/component/screen_interactive.hpp"
 #include "ftxui/dom/elements.hpp"
 #include "ftxui/util/ref.hpp"
-#include<time.h>
+#include <ctime>
 
 #include "record.hpp"
 #include "utils.hpp"
@@ -32,7 +32,7 @@ namespace sys {
     void menu_modify();
 
     void menu_stu_check(const std::string &account);
-    void menu_man_check(const std::string &account, int num1, int num2, int num3, int num_find, std::string browseSTR);
+    void menu_man_check(const std::string &account);
 
     std::vector<base::Student> list_stu;
     std::vector<base::Manager> list_man;
@@ -150,7 +150,7 @@ namespace sys {
                     if (man.getId()==account) {
                         checkExist = true;
                         if (man.getPassword()==password) {
-                            menu_man_check(account, 0, 0, 0, 0, "");
+                            menu_man_check(account);
                         }else {
                             test = "密码错误";
                             password = "";
@@ -449,8 +449,13 @@ namespace sys {
 
     inline int flag = 0;
     inline int num_modify = 0;
+    inline int num1 = 0;
+    inline int num2 = 0;
+    inline int num3 = 0;
+    inline int num_find = 0;
+    std::string browseSTR = "";
 
-    void menu_man_check(const std::string &account, int num1, int num2, int num3, int num_find, std::string browseSTR) {
+    void menu_man_check(const std::string &account) {
 
         int man_index = 0;
 
@@ -548,7 +553,9 @@ namespace sys {
 
         Component button_confirm_compare = Button("   OK", [&] {
             flag = 1;
-            menu_man_check(account, toggled_selected_num, toggled_selected_num2, 0, 0, "");
+            num1 = toggled_selected_num;
+            num2 = toggled_selected_num2;
+            menu_man_check(account); // 还原
             flag = 0;
         }) | size(HEIGHT,EQUAL,3) | size(WIDTH,EQUAL,10);
 
@@ -695,7 +702,8 @@ namespace sys {
 
         auto button_confirm_mach = Button(" ENTER ", [&] {
             flag = 2;
-            menu_man_check(account, 0,0, select_machine, 0, "");
+            num3 = select_machine;
+            menu_man_check(account);
             flag = 0;
         }) | center | size(WIDTH,EQUAL,12);
 
@@ -716,7 +724,7 @@ namespace sys {
         std::string test1 = "",test2 = "";
         Component button_modMachNum = Button(" 修改 ", [&] {
 
-            if (input_MachNum != "") {
+            if (!input_MachNum.empty()) {
                 if (isNum(input_MachNum)) {
                     int tempNum = std::stoi(input_MachNum);
                     machineNum = tempNum;
@@ -726,7 +734,7 @@ namespace sys {
                 }
             }
 
-            if (input_detectNum != "") {
+            if (!input_detectNum.empty()) {
                 detectNum = input_detectNum;
                 test2 = "机房管理员邀请码修改成功";
             }
@@ -749,7 +757,7 @@ namespace sys {
             std::vector<std::string> temp;
             // 先选择选项再查找关键词
             if (toggled_selected_num3 == 0) {
-                if (rec.getId().find(browseSTR) != std::string::npos || browseSTR == "") { //debug tag
+                if (rec.getId().find(browseSTR) != std::string::npos || browseSTR.empty()) { //debug tag
                     temp.emplace_back(rec.getId()+"  ");
                     temp.emplace_back(rec.getName()+"  ");
                     temp.emplace_back(rec.getGender()+"  ");
@@ -764,7 +772,7 @@ namespace sys {
                     temp.emplace_back(std::format("{}",static_cast<int>(cash_index * timeX::timeCal(rec.getStartTime(),rec.getEndTime()))));
                 }
             }else if (toggled_selected_num3 == 1) {
-                if (rec.getName().find(browseSTR) != std::string::npos || browseSTR == "") {
+                if (rec.getName().find(browseSTR) != std::string::npos || browseSTR.empty()) {
                     temp.emplace_back(rec.getId()+"  ");
                     temp.emplace_back(rec.getName()+"  ");
                     temp.emplace_back(rec.getGender()+"  ");
@@ -779,7 +787,7 @@ namespace sys {
                     temp.emplace_back(std::format("{}",static_cast<int>(cash_index * timeX::timeCal(rec.getStartTime(),rec.getEndTime()))));
                 }
             }else {
-                if (rec.getClassId().find(browseSTR) != std::string::npos || browseSTR == "") {
+                if (rec.getClassId().find(browseSTR) != std::string::npos || browseSTR.empty()) {
                     temp.emplace_back(rec.getId()+"  ");
                     temp.emplace_back(rec.getName()+"  ");
                     temp.emplace_back(rec.getGender()+"  ");
@@ -858,23 +866,108 @@ namespace sys {
         std::string input_mod_classId = "";
         auto input_modify_mod_classId = Input(&input_mod_classId, "在此输入修改后的班级");
 
+        std::string input_mod_startTime = "";
+        auto input_modify_mod_startTime = Input(&input_mod_startTime, "在此输入需修改的开始时间");
+
+        std::string input_mod_endTime = "";
+        auto input_modify_mod_endTime = Input(&input_mod_endTime, "在此输入需修改的结束时间");
+
+        std::string test_mod_time = "请使用 \"xxxx-xx-xx xx:xx:xx\" 的时间格式";
+
 
         Component button_modify_modify = Button(" 修改 ", [&] {
 
-            if (input_mod_name == "" && input_mod_id == "" && input_mod_gender == "" && input_mod_classId == "") {
+            if (input_mod_name.empty() && input_mod_id.empty() && input_mod_gender.empty() && input_mod_classId.empty() && input_mod_startTime.empty() && input_mod_endTime.empty()) {
                 test_modify = "请填写至少一行需要修改的数据！";
                 return;
             }
 
-            if (input_mod_id != "") list_rec[selected_numId].setId(input_mod_id);
-            if (input_mod_name != "") list_rec[selected_numId].setName(input_mod_name);
-            if (input_mod_gender != "") list_rec[selected_numId].setGender(input_mod_gender);
-            if (input_mod_classId != "") list_rec[selected_numId].setClassId(input_mod_classId);
+            if (!input_mod_id.empty()) list_rec[selected_numId].setId(input_mod_id);
+            if (!input_mod_name.empty()) list_rec[selected_numId].setName(input_mod_name);
+            if (!input_mod_gender.empty()) list_rec[selected_numId].setGender(input_mod_gender);
+            if (!input_mod_classId.empty()) list_rec[selected_numId].setClassId(input_mod_classId);
+
+            if (!input_mod_startTime.empty()) {
+                if (input_mod_startTime.size() != 19) {
+                    test_modify = "请填写正确的开始时间格式!";
+                    return;
+                }
+
+                std::string str_year = input_mod_startTime.substr(0, 4);
+                std::string str_month = input_mod_startTime.substr(5, 2);
+                std::string str_day = input_mod_startTime.substr(8, 2);
+                std::string str_hour = input_mod_startTime.substr(11, 2);
+                std::string str_minute = input_mod_startTime.substr(14, 2);
+                std::string str_second = input_mod_startTime.substr(17, 2);
+
+                if (!isNum(str_year) || !isNum(str_month) || !isNum(str_day) || !isNum(str_hour) || !isNum(str_minute) || !isNum(str_second)) {
+                    test_modify = "输入时间分析错误！请填写正确格式!";
+                    return;
+                }
+
+                int year = std::stoi(str_year);
+                int month = std::stoi(str_month);
+                int day = std::stoi(str_day);
+                int hour = std::stoi(str_hour);
+                int minute = std::stoi(str_minute);
+                int second = std::stoi(str_second);
+
+                tm mod_startTime = timeX::timeTrans(year, month, day, hour, minute, second);
+                // 开始时间不能晚于结束时间
+                if (timeX::timeComp(list_rec[selected_numId].getEndTime(), mod_startTime) == false) {
+                    test_modify = "开始时间不能晚于结束时间!";
+                    return;
+                }
+
+                if (timeX::timeCheck(mod_startTime) == false) {
+                    test_modify = "输入时间数据错误！请填写正确格式!";
+                    return;
+                }
+
+                list_rec[selected_numId].setStartTime(mod_startTime);
+            }
+
+            if (!input_mod_endTime.empty()) {
+                if (input_mod_endTime.size() != 19) {
+                    test_modify = "请填写正确的结束时间格式!";
+                    return;
+                }
+                std::string str_year = input_mod_endTime.substr(0, 4);
+                std::string str_month = input_mod_endTime.substr(5, 2);
+                std::string str_day = input_mod_endTime.substr(8, 2);
+                std::string str_hour = input_mod_endTime.substr(11, 2);
+                std::string str_minute = input_mod_endTime.substr(14, 2);
+                std::string str_second = input_mod_endTime.substr(17, 2);
+
+                if (!isNum(str_year) || !isNum(str_month) || !isNum(str_day) || !isNum(str_hour) || !isNum(str_minute) || !isNum(str_second)) {
+                    test_modify = "输入时间分析错误！请填写正确格式!";
+                    return;
+                }
+
+                int year = std::stoi(str_year);
+                int month = std::stoi(str_month);
+                int day = std::stoi(str_day);
+                int hour = std::stoi(str_hour);
+                int minute = std::stoi(str_minute);
+                int second = std::stoi(str_second);
+
+                tm mod_endTime = timeX::timeTrans(year, month, day, hour, minute, second);
+                if (timeX::timeCheck(mod_endTime) == false) {
+                    test_modify = "输入时间数据错误！请填写正确格式!";
+                    return;
+                }
+                // 结束时间不能早于开始时间
+                if (timeX::timeComp(list_rec[selected_numId].getStartTime(), mod_endTime) == true) {
+                    test_modify = "结束时间不能早于开始时间!";
+                    return;
+                }
+                list_rec[selected_numId].setEndTime(mod_endTime);
+            }
 
             save();
             test_modify = "修改成功";
             flag = 4;
-            menu_man_check(account, 0, 0, 0, 0, "");
+            menu_man_check(account);
             flag = 0;
         }) | center | size(WIDTH,EQUAL,12);
 
@@ -885,13 +978,15 @@ namespace sys {
             save();
             test_modify = "删除成功";
             flag = 4;
-            menu_man_check(account, 0, 0, 0, 0, "");
+            menu_man_check(account);
             flag = 0;
         }) | center | size(WIDTH,EQUAL,12);
 
         Component button_find_confirm = Button(" 确认 ", [&] {
             flag = 3;
-            menu_man_check(account,0,0,0,toggled_selected_num3, input_browse);
+            num_find = toggled_selected_num3;
+            browseSTR = input_browse;
+            menu_man_check(account);
             flag = 0;
         }) | center | size(WIDTH,EQUAL,12);
 
@@ -922,6 +1017,8 @@ namespace sys {
             input_modify_mod_gender,
             input_modify_mod_id,
             input_modify_mod_name,
+            input_modify_mod_startTime,
+            input_modify_mod_endTime,
 
         });
 
@@ -1045,10 +1142,28 @@ namespace sys {
                     layout2->Render() | center,
                     separatorEmpty(),
                 })| center | border | size(WIDTH,EQUAL,60)| center,
-                hbox({text("学号: ") | bold, input_modify_mod_id->Render()}) | center,
-                hbox({text("姓名: ") | bold, input_modify_mod_name->Render()}) | center,
-                hbox({text("性别: ") | bold, input_modify_mod_gender->Render()}) | center,
-                hbox({text("班级: ") | bold, input_modify_mod_classId->Render()}) | center,
+                separatorEmpty(),
+                hbox({
+
+                    vbox({
+                        hbox({text("学号: ") | bold, input_modify_mod_id->Render()}) | center,
+                        hbox({text("姓名: ") | bold, input_modify_mod_name->Render()}) | center,
+                        hbox({text("性别: ") | bold, input_modify_mod_gender->Render()}) | center,
+                        hbox({text("班级: ") | bold, input_modify_mod_classId->Render()}) | center,
+                    }) | center,
+                    separatorEmpty(),
+                    separator(),
+                    separatorEmpty(),
+                    vbox({
+
+                        hbox({text("开始时间: ") | bold, input_modify_mod_startTime->Render()}) | center,
+                        hbox({text("结束时间: ") | bold, input_modify_mod_endTime->Render()}) | center,
+                        text("Warning：输入账号姓名班级时请注意格式")| bold | color(Color::Red) | center,
+                        text(test_mod_time) | bold | color(Color::Red) | center,
+
+                    }) | center,
+
+                }) | center,
                 separatorEmpty(),
                 hbox({button_modify_modify->Render(), separator(), button_modify_delete->Render()}) | center ,
                 text(test_modify) | bold | color(Color::Red) | center,
@@ -1084,14 +1199,14 @@ namespace sys {
             if (flag == 1) {
                 flag = 0;
                 model_base = model_compare;
-                toggled_selected_num = 0;
-                toggled_selected_num2 = 0;
+                // toggled_selected_num = 0;
+                // toggled_selected_num2 = 0;
             }
 
             if (flag == 2) {
                 flag = 0;
                 model_base = model_machine_check;
-                select_machine = 0;
+                // select_machine = 0;
             }
 
             if (flag == 3) {
@@ -1129,6 +1244,8 @@ namespace sys {
         screen.Loop(result);
 
     }
+
+    inline int flag_stu = 0;
 
     void menu_stu_check(const std::string &account) {
 
@@ -1261,7 +1378,9 @@ namespace sys {
             list_rec.emplace_back(base::Record(base::Student(id,classid,name,gender,"NULL"),timex,timez,select_machine));
 
             save();
-
+            flag_stu = 1;
+            menu_stu_check(account);
+            flag_stu = 0;
 
         }) | size(WIDTH,EQUAL,10) | center;
 
@@ -1421,6 +1540,12 @@ namespace sys {
         });
 
         Component model1 = Renderer(comp, [&] {
+
+            if (flag_stu == 1) {
+                flag_stu = 0;
+                model_base = model_downMachine;
+            }
+
             return hbox({
                 separatorEmpty(),
                 vbox({separatorEmpty(), button_start_machine->Render() | center, separatorEmpty(), button_end_machine->Render() | center, separatorEmpty(), button_look->Render() | center, separatorEmpty(), button_logout->Render() | center,separatorEmpty()}) | size(WIDTH,EQUAL,15) | center,

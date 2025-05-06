@@ -66,6 +66,40 @@ namespace timeX {
         return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
     }
 
+    tm timeTrans(int year, int month, int day, int hour, int minute, int second) {
+        tm ptm;
+        ptm.tm_year = year - 1900;
+        ptm.tm_mon = month - 1;
+        ptm.tm_mday = day;
+        ptm.tm_hour = hour;
+        ptm.tm_min = minute;
+        ptm.tm_sec = second;
+        return ptm;
+    }
+
+    bool timeCheck(tm t1) {
+        // 检查时间 如月份大于12或者小于1 日期大于对应月份最大天数或者小于0 闰年2月有29天等
+
+        int year = t1.tm_year + 1900;
+        int month = t1.tm_mon + 1;
+        int day = t1.tm_mday;
+        int hour = t1.tm_hour;
+        int minute = t1.tm_min;
+        int second = t1.tm_sec;
+
+        std::vector<int> spec_monthTable = monthTable;
+        if (isLeapYear(year)) spec_monthTable[2] = 29;
+        else spec_monthTable[2] = 28;
+
+        if (month > 12 || month < 1) return false;
+        if (day > monthTable[month] || day < 1) return false;
+        if (hour > 23 || hour < 0) return false;
+        if (minute > 59 || minute < 0) return false;
+        if (second > 59 || second < 0) return false;
+
+        return true;
+    }
+
     bool timeComp(tm t1, tm t2) { // t1 > t2 则返回true， t1 < t2 则返回false
         int year1 = t1.tm_year + 1900;
         int year2 = t2.tm_year + 1900;
